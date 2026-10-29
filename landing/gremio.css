@@ -1,0 +1,62 @@
+/* ===== Landing Gremio (qumax.com.ar/gremio) · solo aplica donde exista .qxg ===== */
+body:has(.qxg){overflow-x:hidden}
+body:has(.qxg) .section-main-page{padding:0!important}
+body:has(.qxg) .section-main-page .container{max-width:none!important;width:100%!important;padding:0!important;margin:0!important}
+body:has(.qxg) .section-main-page .page-content{max-width:none!important;width:100%!important;padding:0!important;margin:0!important}
+.qxg{--c:#0094dd;--c2:#0077b3;--c3:#005e8c;--soft:#f4fafe;--t:#3d4752;--m:#6b7280;font-family:inherit;color:var(--t);line-height:1.55;text-align:left}
+.qxg *{box-sizing:border-box}
+.qxg img{max-width:100%;height:auto;border:0}
+.qxg p{margin:0}
+.qxg h1,.qxg h2,.qxg h3{margin:0;font-weight:800;letter-spacing:-.01em}
+.qxg-wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+/* hero */
+.qxg-hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(120deg,#005e8c 0%,#0077b3 40%,#0094dd 100%)}
+.qxg-hero:before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1.4px,transparent 1.5px);background-size:30px 30px;pointer-events:none}
+.qxg-hero:after{content:"";position:absolute;width:620px;height:620px;right:-160px;top:-220px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.qxg-hero-sil{position:absolute;left:-2%;bottom:-6px;width:46%;opacity:.10;pointer-events:none}
+.qxg-hero-sil img{display:block;width:100%}
+.qxg-hero-in{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;min-height:560px;padding-top:56px;padding-bottom:56px}
+.qxg-badge{display:inline-block;padding:8px 16px;border-radius:999px;background:rgba(255,255,255,.16);font-size:13px!important;font-weight:700;letter-spacing:.18em;margin-bottom:22px!important;color:#fff}
+.qxg-h1{font-size:clamp(34px,4.6vw,60px);line-height:1.08;color:#fff!important;margin-bottom:18px!important}
+.qxg-lead{font-size:clamp(16px,1.5vw,20px);color:#e6f4fb;max-width:560px;margin-bottom:14px!important}
+.qxg-claim{font-weight:700;font-size:18px;color:#fff;padding-bottom:10px;border-bottom:4px solid rgba(255,255,255,.9);display:inline-block;margin-bottom:28px!important}
+.qxg-hero-art img{display:block;width:100%;max-width:600px;margin:0 auto;filter:drop-shadow(0 20px 40px rgba(0,40,70,.25))}
+.qxg-btns{display:flex;flex-wrap:wrap;gap:12px}
+.qxg-btn{display:inline-flex;align-items:center;justify-content:center;padding:15px 30px;border-radius:999px;font-weight:700;font-size:16px;text-decoration:none!important;transition:transform .2s,box-shadow .2s,background .2s}
+.qxg-btn:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,40,70,.25)}
+.qxg-btn-w{background:#fff;color:var(--c2)!important}
+.qxg-btn-o{border:2px solid #fff;color:#fff!important;background:transparent}
+.qxg-btn-o:hover{background:rgba(255,255,255,.14)}
+/* secciones */
+.qxg-sec{padding:84px 0;background:#fff}
+.qxg-soft{background:var(--soft)}
+.qxg-eye{color:var(--c);font-size:13px!important;font-weight:800;letter-spacing:.22em;text-align:center;margin-bottom:10px!important}
+.qxg-h2{color:var(--c2)!important;font-size:clamp(26px,3vw,38px);line-height:1.2;text-align:center;max-width:820px;margin:0 auto 14px!important}
+.qxg-sub{text-align:center;max-width:720px;margin:0 auto 44px!important;font-size:17px;color:var(--t)}
+.qxg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.qxg-card{background:#fff;border:1px solid #e3eef6;border-radius:18px;padding:30px 26px;box-shadow:0 10px 30px rgba(0,80,130,.07);transition:transform .25s,box-shadow .25s,border-color .25s}
+.qxg-card:hover{transform:translateY(-6px);box-shadow:0 18px 40px rgba(0,80,130,.14);border-color:#bfe3f7}
+.qxg-card h3,.qxg-step h3{color:var(--c2)!important;font-size:20px;margin:6px 0 8px!important}
+.qxg-card p,.qxg-step p{font-size:15px;color:var(--t)}
+.qxg-ic{display:block;width:76px;height:76px;margin:0 0 8px -6px}
+.qxg-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:28px;position:relative;margin-top:36px}
+.qxg-steps:before{content:"";position:absolute;top:46px;left:12%;right:12%;border-top:2px dashed #9fd4f2}
+.qxg-step{position:relative;text-align:center}
+.qxg-step .qxg-ic-l{width:92px;height:92px;margin:0 auto 10px;background:var(--soft);border-radius:50%}
+.qxg-num{color:var(--c);font-size:12px!important;font-weight:800;letter-spacing:.2em}
+/* cta */
+.qxg-cta{padding:76px 0;text-align:center;color:#fff;background:linear-gradient(120deg,#005e8c,#0094dd)}
+.qxg-cta h2{color:#fff!important;font-size:clamp(26px,3vw,36px);margin-bottom:12px!important}
+.qxg-cta p{color:#e6f4fb;font-size:17px;margin-bottom:26px!important}
+.qxg-cta .qxg-btns{justify-content:center}
+.qxg-cta .qxg-small{font-size:14px;color:#d9f0fc;margin:22px 0 0!important}
+/* animaciones de entrada */
+@keyframes qxgUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.qxg-hero-txt>*{animation:qxgUp .8s ease-out both}
+.qxg-hero-txt>*:nth-child(2){animation-delay:.1s}.qxg-hero-txt>*:nth-child(3){animation-delay:.2s}.qxg-hero-txt>*:nth-child(4){animation-delay:.3s}.qxg-hero-txt>*:nth-child(5){animation-delay:.4s}
+.qxg-hero-art{animation:qxgUp 1s .2s ease-out both}
+.qxg-card,.qxg-step{animation:qxgUp .7s ease-out both}.qxg-card:nth-child(2),.qxg-step:nth-child(2){animation-delay:.08s}.qxg-card:nth-child(3),.qxg-step:nth-child(3){animation-delay:.16s}.qxg-card:nth-child(4),.qxg-step:nth-child(4){animation-delay:.24s}.qxg-card:nth-child(5){animation-delay:.32s}.qxg-card:nth-child(6){animation-delay:.4s}
+@media (prefers-reduced-motion:reduce){.qxg *{animation:none!important;transition:none!important}}
+/* responsive */
+@media (max-width:980px){.qxg-hero-in{grid-template-columns:1fr;text-align:center;min-height:0;padding-top:44px;padding-bottom:36px}.qxg-lead{margin-left:auto;margin-right:auto}.qxg-btns{justify-content:center}.qxg-hero-art img{max-width:480px}.qxg-grid{grid-template-columns:repeat(2,1fr)}.qxg-steps{grid-template-columns:repeat(2,1fr)}.qxg-steps:before{display:none}.qxg-hero-sil{width:90%}}
+@media (max-width:600px){.qxg-sec{padding:56px 0}.qxg-grid,.qxg-steps{grid-template-columns:1fr}.qxg-card{text-align:center}.qxg-card .qxg-ic{margin:0 auto 8px}.qxg-btn{width:100%}}
