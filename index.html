@@ -45,7 +45,7 @@
   /* carrito */
   button.add{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;white-space:nowrap}
   button.add.in{background:var(--accent);color:#fff}
-  #fab{position:fixed;right:18px;bottom:18px;z-index:20;display:none;box-shadow:0 6px 20px rgba(0,119,179,.35);padding:13px 18px;font-size:14px;border-radius:999px}
+  #fab{position:fixed;right:18px;bottom:88px;z-index:20;display:none;box-shadow:0 6px 20px rgba(0,119,179,.35);padding:13px 18px;font-size:14px;border-radius:999px}
   #cart{position:fixed;inset:0;z-index:30;display:none;background:rgba(61,71,82,.35)}
   #cart .panel{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;display:flex;flex-direction:column}
   #cart .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
@@ -60,6 +60,8 @@
   #cart .ft{padding:14px 18px;border-top:1px solid var(--line)} #cart .ft .btn{width:100%;padding:13px;font-size:15px}
   #cmsg{font-size:13px;margin-top:8px;min-height:18px} #cmsg.ok{color:var(--accent2);font-weight:600} #cmsg.bad{color:var(--dark);font-weight:600}
   .hpot{position:absolute;left:-9999px}
+  .btn-wa{position:fixed;right:18px;bottom:18px;z-index:25;width:58px;height:58px;border-radius:50%;background:#4dc247;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .btn-wa svg{width:32px;height:32px;fill:#fff}
   .cuenta{background:var(--soft);color:var(--accent2);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
   .empty{color:var(--muted);text-align:center;padding:40px 0}
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
@@ -80,7 +82,6 @@
     <p id="sub">Precios de referencia para instaladores, en dólares con IVA incluido. Sujetos a cambio sin previo aviso. Disponibilidad aproximada.</p>
   </div>
   <div class="acts" id="acts" style="display:none">
-    <button class="btn" id="xls">Descargar Excel</button>
     <button class="btn ghost" id="out">Salir</button>
   </div>
 </header>
@@ -111,6 +112,7 @@
     </table>
   </main>
 </div>
+<a class="btn-wa" href="https://wa.me/5493492209925" target="_blank" rel="noopener" aria-label="WhatsApp Qumax" title="Escribinos por WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.8-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4C5.8 19.8 5.2 17.8 5.2 15.8 5.2 9.9 10 5.2 16 5.2s10.8 4.7 10.8 10.6S21.9 26.4 16 26.4zm5.9-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.4c.2.2 2.3 3.6 5.6 4.9 2.8 1.1 3.3.9 3.9.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg></a>
 <button class="btn" id="fab">🛒 Mi pedido</button>
 <div id="cart"><div class="panel">
   <div class="hd"><h3>Mi pedido</h3><button class="x" id="cx" aria-label="Cerrar">×</button></div>
@@ -166,7 +168,6 @@ async function loadData({id, priv}){
   DATA = obj.items; LISTA = obj.fecha; loadCart();
   $("title").textContent = "Lista gremio Hikvision · actualizada el " + obj.fecha;
   $("login").style.display = "none"; $("app").style.display = "block"; $("acts").style.display = "flex";
-  $("xls").style.display = META.ivx ? "" : "none";
   [...new Set(DATA.map(d=>d.categoria))].sort().forEach(c => $("cat").add(new Option(c,c)));
   fillSub(); render();
 }
@@ -252,13 +253,6 @@ $("send").onclick = async () => {
   finally{ $("send").disabled = false; $("send").textContent = "Enviar pedido"; }
 };
 
-$("xls").onclick = async () => {
-  const ct = await (await fetch("lista.bin?t=" + Date.now(), {cache:"no-store"})).arrayBuffer();
-  const pt = await S.decrypt({name:"AES-GCM", iv:ub64(META.ivx)}, KEY, ct);
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([pt], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}));
-  a.download = META.xname || "Lista_Gremio_Qumax.xlsx"; document.body.appendChild(a); a.click(); a.remove();
-};
 $("out").onclick = () => location.reload();
 $("login").onsubmit = async ev => {
   ev.preventDefault(); $("err").textContent = ""; $("go").disabled = true; $("go").textContent = "Verificando…";
