@@ -1,6 +1,8 @@
 /* ===== Landing Gremio (qumax.com.ar/gremio) · solo aplica donde exista .qxg ===== */
 body:has(.qxg){overflow-x:hidden}
 body:has(.qxg) .section-main-page{padding:0!important}
+body:has(.qxg) .page-content-section{padding:0!important}
+body:has(.qxg) .section-banners:empty{display:none}
 body:has(.qxg) .section-main-page .container{max-width:none!important;width:100%!important;padding:0!important;margin:0!important}
 body:has(.qxg) .section-main-page .page-content{max-width:none!important;width:100%!important;padding:0!important;margin:0!important}
 .qxg{--c:#0094dd;--c2:#0077b3;--c3:#005e8c;--soft:#f4fafe;--t:#3d4752;--m:#6b7280;font-family:inherit;color:var(--t);line-height:1.55;text-align:left}
