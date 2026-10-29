@@ -44,7 +44,10 @@
   a.wa{font-size:12px;color:var(--accent2);text-decoration:none;font-weight:700;white-space:nowrap}
   /* carrito */
   button.add{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;white-space:nowrap}
-  button.add.in{background:var(--accent);color:#fff}
+  .step{display:inline-flex;align-items:center;border:1px solid var(--accent);border-radius:8px;overflow:hidden;background:#fff}
+  .step button{font:inherit;font-size:16px;font-weight:800;width:30px;height:30px;border:0;background:var(--accent);color:#fff;cursor:pointer;line-height:1}
+  .step input{width:42px;height:30px;border:0;text-align:center;font:inherit;font-size:14px;font-weight:700;color:var(--accent2);-moz-appearance:textfield}
+  .step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   #fab{position:fixed;right:18px;bottom:88px;z-index:20;display:none;box-shadow:0 6px 20px rgba(0,119,179,.35);padding:13px 18px;font-size:14px;border-radius:999px}
   #cart{position:fixed;inset:0;z-index:30;display:none;background:rgba(61,71,82,.35)}
   #cart .panel{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;display:flex;flex-direction:column}
@@ -71,6 +74,8 @@
     colgroup{display:none} tr{display:grid;grid-template-columns:90px 1fr;gap:2px 10px;padding:10px;border-bottom:1px solid var(--line)}
     td{border:0;padding:2px 0} td.img{grid-row:span 5}
     td.price{text-align:left}
+    #rows td:last-child{grid-column:2;padding-top:6px}
+    main{padding-bottom:150px}
   }
 </style>
 </head>
@@ -106,7 +111,7 @@
   </div>
   <main>
     <table>
-      <colgroup><col style="width:100px"><col style="width:20%"><col><col style="width:15%"><col style="width:140px"><col style="width:120px"><col style="width:96px"></colgroup>
+      <colgroup><col style="width:100px"><col style="width:20%"><col><col style="width:15%"><col style="width:140px"><col style="width:120px"><col style="width:124px"></colgroup>
       <thead><tr><th>Foto</th><th>Artículo</th><th>Detalle</th><th>Categoría</th><th>Disponibilidad</th><th style="text-align:right">Precio USD<br>IVA incl.</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
@@ -191,7 +196,7 @@ function render(){
     <td class="cat">${esc(d.categoria)} · ${esc(d.subcategoria)}</td>
     <td><span class="pill ${cls[d.disponibilidad]}">${d.disponibilidad}</span>${d.ingresos?`<br><span class="pill tr">${d.ingresos}</span>`:""}</td>
     <td class="price">${fmt(d.precio)}</td>
-    <td><button class="add${CART[d.articulo]?" in":""}" data-k="${esc(d.articulo)}">${CART[d.articulo]?"✓ "+CART[d.articulo].qty:"+ Agregar"}</button></td>
+    <td>${CART[d.articulo]?`<div class="step"><button class="mn" data-k="${esc(d.articulo)}" title="Restar" aria-label="Restar">−</button><input type="number" min="0" max="9999" class="qy" data-k="${esc(d.articulo)}" value="${CART[d.articulo].qty}" aria-label="Cantidad"><button class="pl" data-k="${esc(d.articulo)}" title="Sumar" aria-label="Sumar">+</button></div>`:`<button class="add" data-k="${esc(d.articulo)}">+ Agregar</button>`}</td>
   </tr>`).join("");
 }
 $("cat").onchange=()=>{fillSub();render()}; ["q","subc","disp"].forEach(id=>$(id).addEventListener("input",render));
@@ -223,9 +228,17 @@ function paintCart(){
     : '<div class="empty">Todavía no agregaste productos.</div>';
 }
 document.addEventListener("click", ev => {
-  const a = ev.target.closest("button.add"); if(a){ const k = a.dataset.k; CART[k] = {qty: (CART[k]?.qty || 0) + 1}; saveCart(); paintCart(); render(); return; }
+  const a = ev.target.closest("button.add, .step button.pl"); if(a){ const k = a.dataset.k; CART[k] = {qty: Math.min(9999, (CART[k]?.qty || 0) + 1)}; saveCart(); paintCart(); render(); return; }
+  const m = ev.target.closest(".step button.mn"); if(m){ const k = m.dataset.k, q = (CART[k]?.qty || 0) - 1; if(q > 0) CART[k] = {qty: q}; else delete CART[k]; saveCart(); paintCart(); render(); return; }
   const r = ev.target.closest("button.rm"); if(r){ delete CART[r.dataset.r]; saveCart(); paintCart(); render(); }
 });
+$("rows").addEventListener("change", ev => {
+  const i = ev.target.closest("input.qy"); if(!i) return;
+  const q = Math.max(0, Math.min(9999, Math.floor(Number(i.value) || 0)));
+  if(q) CART[i.dataset.k] = {qty: q}; else delete CART[i.dataset.k];
+  saveCart(); paintCart(); render();
+});
+$("rows").addEventListener("keydown", ev => { if(ev.key === "Enter" && ev.target.matches("input.qy")) ev.target.blur(); });
 $("lines").addEventListener("change", ev => {
   const i = ev.target.closest("input[data-q]"); if(!i) return;
   const q = Math.max(0, Math.min(9999, Math.floor(Number(i.value) || 0)));
