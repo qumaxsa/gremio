@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sumate a la red de instaladores · Qumax</title>
+<style>
+  :root{--dark:#3d4752;--accent:#0094dd;--accent2:#0077b3;--soft:#e6f4fb;--bg:#f4fafe;--muted:#6b7280}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--dark)}
+  header{background:var(--accent);color:#fff;padding:18px 20px 14px}
+  header .logo{display:block;height:40px;width:auto;margin:0 0 6px}
+  header h1{margin:4px 0 2px;font-size:18px;font-weight:700}
+  header p{margin:0;font-size:14px;opacity:.92}
+  form{max-width:560px;margin:28px auto;background:#fff;border-radius:14px;padding:26px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+  h2{margin:0 0 4px;font-size:20px} .intro{margin:0 0 16px;color:var(--muted);font-size:14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px} .full{grid-column:1/-1}
+  label{display:block;font-size:13px;font-weight:600;margin:0 0 4px}
+  input,textarea{width:100%;font:inherit;font-size:15px;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px}
+  textarea{min-height:80px}
+  .btn{width:100%;font:inherit;font-size:15px;font-weight:700;border:0;border-radius:8px;padding:13px;cursor:pointer;background:var(--accent);color:#fff;margin-top:16px}
+  .btn:disabled{opacity:.6}
+  #msg{margin-top:12px;font-size:14px;min-height:20px;font-weight:600} #msg.ok{color:var(--accent2)}
+  .hpot{position:absolute;left:-9999px}
+  .ok-box{background:var(--soft);color:var(--accent2);border-radius:10px;padding:18px;font-size:15px}
+  .legal{font-size:12px;color:var(--muted);margin-top:12px}
+  footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
+  @media (max-width:600px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" alt="Qumax" src="data:image/webp;base64,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">
+  <h1>Sumate a la red de instaladores Qumax</h1>
+  <p>Precios gremio, soporte técnico, asesoramiento en proyectos, capacitaciones y monitoreo mayorista.</p>
+</header>
+<form id="f" autocomplete="on">
+  <h2>Pedí tu alta</h2>
+  <p class="intro">Completá tus datos. Te contactamos para darte el acceso a la lista gremio y contarte cómo trabajamos juntos.</p>
+  <div class="grid">
+    <div><label for="nombre">Nombre y apellido *</label><input id="nombre" autocomplete="name" required maxlength="80"></div>
+    <div><label for="empresa">Empresa o nombre comercial</label><input id="empresa" autocomplete="organization" maxlength="80"></div>
+    <div><label for="celular">Celular (WhatsApp) *</label><input id="celular" type="tel" autocomplete="tel" required maxlength="30" placeholder="Ej.: 3492 123456"></div>
+    <div><label for="email">Email *</label><input id="email" type="email" autocomplete="email" required maxlength="120"></div>
+    <div class="full"><label for="localidad">Localidad *</label><input id="localidad" autocomplete="address-level2" required maxlength="80"></div>
+    <div class="full"><label for="coment">¿A qué te dedicás o qué necesitás? (opcional)</label><textarea id="coment" maxlength="800" placeholder="Ej.: instalo cámaras y alarmas, me interesa la capacitación de Hikvision"></textarea></div>
+  </div>
+  <input class="hpot" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <button class="btn" id="go" type="submit">Enviar solicitud</button>
+  <div id="msg"></div>
+  <p class="legal">Usamos tus datos solo para contactarte por tu alta como instalador. ¿Dudas? Escribinos a info@qumax.com.ar.</p>
+</form>
+<footer>QUMAX S.A. · Lisandro de la Torre 323, Rafaela · info@qumax.com.ar · www.qumax.com.ar</footer>
+<script>
+const URL_ALTA = "https://script.google.com/macros/s/AKfycbyDf0wVkVnxrvMzOM1n_Nsy72fAfsyw5bZK5P2NNJgxxQLG8ywScaiVtnXojtkc8q7uiA/exec";
+const $ = id => document.getElementById(id);
+$("f").onsubmit = async ev => {
+  ev.preventDefault();
+  const m = $("msg"); m.className = ""; m.textContent = "";
+  $("go").disabled = true; $("go").textContent = "Enviando…";
+  try {
+    const body = {tipo: "alta", nombre: $("nombre").value.trim(), empresa: $("empresa").value.trim(), celular: $("celular").value.trim(),
+      email: $("email").value.trim(), localidad: $("localidad").value.trim(), comentario: $("coment").value.trim(), hp: $("web").value};
+    const r = await fetch(URL_ALTA, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(body)});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || "No se pudo enviar");
+    $("f").innerHTML = '<div class="ok-box"><b>¡Gracias, ' + body.nombre.replace(/[<>&]/g,"") + '!</b><br>Recibimos tu solicitud. Te vamos a contactar a la brevedad para darte el alta.</div>';
+  } catch(e) {
+    m.textContent = (e.message || "No se pudo enviar") + ". Si sigue fallando, escribinos a info@qumax.com.ar.";
+    $("go").disabled = false; $("go").textContent = "Enviar solicitud";
+  }
+};
+</script>
+</body>
+</html>
