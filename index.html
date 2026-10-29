@@ -106,7 +106,6 @@
     <input type="search" id="q" placeholder="Buscar modelo o descripción (ej.: DS-2CD, domo, NVR)">
     <select id="cat"><option value="">Todas las categorías</option></select>
     <select id="subc"><option value="">Todas las subcategorías</option></select>
-    <label><input type="checkbox" id="disp"> Solo disponibles o ingresando</label>
     <span class="count" id="count"></span>
   </div>
   <main>
@@ -185,8 +184,8 @@ function fillSub(){
   [...new Set(DATA.filter(d=>!c||d.categoria===c).map(d=>d.subcategoria))].sort().forEach(s=>$("subc").add(new Option(s,s)));
 }
 function render(){
-  const q=$("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), c=$("cat").value, s=$("subc").value, onlyAv=$("disp").checked;
-  const list=DATA.filter(d=>(!c||d.categoria===c)&&(!s||d.subcategoria===s)&&(!onlyAv||d.disponibilidad!=="Sin stock"||d.ingresos)
+  const q=$("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), c=$("cat").value, s=$("subc").value;
+  const list=DATA.filter(d=>(!c||d.categoria===c)&&(!s||d.subcategoria===s)
     &&q.every(w=>(d.articulo+" "+d.detalle+" "+d.subcategoria).toLowerCase().includes(w)));
   $("count").textContent=list.length+" de "+DATA.length+" artículos";
   $("rows").innerHTML=list.map(d=>`<tr>
@@ -199,7 +198,7 @@ function render(){
     <td>${CART[d.articulo]?`<div class="step"><button class="mn" data-k="${esc(d.articulo)}" title="Restar" aria-label="Restar">−</button><input type="number" min="0" max="9999" class="qy" data-k="${esc(d.articulo)}" value="${CART[d.articulo].qty}" aria-label="Cantidad"><button class="pl" data-k="${esc(d.articulo)}" title="Sumar" aria-label="Sumar">+</button></div>`:`<button class="add" data-k="${esc(d.articulo)}">+ Agregar</button>`}</td>
   </tr>`).join("");
 }
-$("cat").onchange=()=>{fillSub();render()}; ["q","subc","disp"].forEach(id=>$(id).addEventListener("input",render));
+$("cat").onchange=()=>{fillSub();render()}; ["q","subc"].forEach(id=>$(id).addEventListener("input",render));
 
 // ---------------- carrito ----------------
 const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(_){ return null; } },
