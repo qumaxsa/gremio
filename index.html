@@ -185,9 +185,10 @@ function fillSub(){
 }
 function render(){
   const q=$("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), c=$("cat").value, s=$("subc").value;
-  const list=DATA.filter(d=>(!c||d.categoria===c)&&(!s||d.subcategoria===s)
+  // sin stock y sin ingreso: no se listan al navegar, solo aparecen si el técnico los busca
+  const list=DATA.filter(d=>(q.length||d.disponibilidad!=="Sin stock"||d.ingresos)&&(!c||d.categoria===c)&&(!s||d.subcategoria===s)
     &&q.every(w=>(d.articulo+" "+d.detalle+" "+d.subcategoria).toLowerCase().includes(w)));
-  $("count").textContent=list.length+" de "+DATA.length+" artículos";
+  $("count").textContent=list.length+" artículos";
   $("rows").innerHTML=list.map(d=>`<tr>
     <td class="img">${d.img?`<img loading="lazy" src="${d.img}" alt="">`:""}</td>
     <td class="art">${esc(d.articulo)}</td>
