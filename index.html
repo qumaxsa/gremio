@@ -60,6 +60,7 @@
   #cart .ft{padding:14px 18px;border-top:1px solid var(--line)} #cart .ft .btn{width:100%;padding:13px;font-size:15px}
   #cmsg{font-size:13px;margin-top:8px;min-height:18px} #cmsg.ok{color:var(--accent2);font-weight:600} #cmsg.bad{color:var(--dark);font-weight:600}
   .hpot{position:absolute;left:-9999px}
+  .cuenta{background:var(--soft);color:var(--accent2);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
   .empty{color:var(--muted);text-align:center;padding:40px 0}
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
@@ -116,11 +117,8 @@
   <div class="body">
     <div id="lines"></div>
     <div class="tot"><span>Total USD (IVA incluido)</span><span id="ctot">US$ 0,00</span></div>
+    <div class="cuenta" id="cuenta"></div>
     <div class="frm" id="frm">
-      <input id="f_nombre" placeholder="Nombre y apellido *" autocomplete="name">
-      <input id="f_empresa" placeholder="Empresa (opcional)" autocomplete="organization">
-      <input id="f_tel" placeholder="Teléfono / WhatsApp *" autocomplete="tel">
-      <input id="f_email" type="email" placeholder="Email *" autocomplete="email">
       <textarea id="f_com" placeholder="Comentario (forma de entrega, pago, etc.)"></textarea>
       <input class="hpot" id="f_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     </div>
@@ -200,14 +198,13 @@ $("cat").onchange=()=>{fillSub();render()}; ["q","subc","disp"].forEach(id=>$(id
 // ---------------- carrito ----------------
 const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(_){ return null; } },
              set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} } };
-const CK = () => "qx_pedido_" + USER.toLowerCase(), FK = "qx_datos_tecnico";
+const CK = () => "qx_pedido_" + USER.toLowerCase();
 const BY = () => Object.fromEntries(DATA.map(d => [d.articulo, d]));
 function loadCart(){
   const by = BY(), saved = ls.get(CK()) || {};
   CART = {};
   for(const [k, q] of Object.entries(saved)) if(by[k]) CART[k] = {qty: q};   // precios siempre de la lista vigente
-  const f = ls.get(FK) || {};
-  [["f_nombre","nombre"],["f_empresa","empresa"],["f_tel","telefono"],["f_email","email"]].forEach(([id,k]) => { if(f[k]) $(id).value = f[k]; });
+  $("cuenta").innerHTML = "El pedido se envía a nombre de tu cuenta <b>" + esc(USER) + "</b>, con los datos registrados en Qumax. Te llega una copia por mail.";
   paintCart();
 }
 function saveCart(){ ls.set(CK(), Object.fromEntries(Object.entries(CART).map(([k,v]) => [k, v.qty]))); }
@@ -239,19 +236,16 @@ $("cx").onclick = () => $("cart").style.display = "none";
 $("cart").addEventListener("click", ev => { if(ev.target.id === "cart") $("cart").style.display = "none"; });
 $("send").onclick = async () => {
   const L = lines(), msg = $("cmsg"); msg.className = "bad";
-  const f = {nombre: $("f_nombre").value.trim(), empresa: $("f_empresa").value.trim(), telefono: $("f_tel").value.trim(), email: $("f_email").value.trim()};
   if(!L.length){ msg.textContent = "El pedido está vacío."; return; }
-  if(!f.nombre || !f.telefono || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)){ msg.textContent = "Completá nombre, teléfono y un email válido."; return; }
-  ls.set(FK, f);
   $("send").disabled = true; $("send").textContent = "Enviando…"; msg.className = ""; msg.textContent = "";
   try{
     const r = await fetch(PEDIDOS_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify({...f, usuario: USER, comentario: $("f_com").value.trim(), lista: LISTA, hp: $("f_hp").value,
+      body: JSON.stringify({usuario: USER, comentario: $("f_com").value.trim(), lista: LISTA, hp: $("f_hp").value,
         items: L.map(l => ({sku: l.d.articulo, detalle: l.d.detalle, qty: l.qty, precio: l.d.precio}))})});
     const j = await r.json();
     if(!j.ok) throw new Error(j.error || "No se pudo enviar");
     CART = {}; saveCart(); paintCart(); render(); $("f_com").value = "";
-    $("lines").innerHTML = '<div class="empty">✓ Pedido <b>' + esc(j.pedido) + '</b> enviado. Te llegó una copia a ' + esc(f.email) + '.</div>';
+    $("lines").innerHTML = '<div class="empty">✓ Pedido <b>' + esc(j.pedido) + '</b> enviado. Te llega una copia a tu mail registrado.</div>';
     msg.className = "ok"; msg.textContent = "¡Listo! Qumax te va a confirmar stock y precio final.";
     $("fab").style.display = "none";
   }catch(e){ msg.className = "bad"; msg.textContent = (e.message || "No se pudo enviar") + ". Si sigue fallando, escribinos por WhatsApp al +54 9 3492 20-9925."; }
