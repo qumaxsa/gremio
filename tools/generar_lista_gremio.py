@@ -49,6 +49,8 @@ STOCK_COLORS = {"Stock alto": "005E8C", "Stock normal": "0094DD", "Stock bajo": 
 
 
 CTRL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+# categorías que no se publican (pedido de Henry, 30/10/2026)
+EXCLUIR_CAT = re.compile(r"\b(outlet|ofertas?)\b", re.I)
 
 
 def clean(s):
@@ -82,6 +84,8 @@ def build_rows(pkg):
         iva = num(x["IVA"])
         neto = num(x["Precio Gremio USD"])
         if neto <= 0:
+            continue
+        if EXCLUIR_CAT.search(f'{x.get("Categoría", "")} | {x.get("Sub Categoría", "")}'):
             continue
         pods = [p for p in transit.get(ean, {}).get("pods", []) if num(p.get("avalible_quantity", 0)) > 0]
         en_transito = bool(pods)
