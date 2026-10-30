@@ -112,6 +112,12 @@ def main():
             imgs[x["Código EAN"]] = b
         x.pop("_foto")
 
+    # CONTROL DE PRECIOS: se publica solo el precio gremio (price_no_list, sin IVA; la lista le suma el IVA).
+    # Si algún precio gremio es menor que el costo o falta, algo cambió en la API: no se publica nada.
+    malos = [x for x in prods if x["item_id"] in precios
+             and not (float(precios[x["item_id"]].get("price_no_list") or 0) >= float(precios[x["item_id"]].get("price") or 0) > 0)]
+    if malos:
+        raise SystemExit(f"CONTROL DE PRECIOS: {len(malos)} artículos con precio gremio menor al costo o sin precio. No se publica.")
     if len(items) < 800:
         raise SystemExit(f"Muy pocos artículos ({len(items)}): algo cambió en la API, no se publica")
     pkg = {"fecha": datetime.now(timezone.utc).isoformat(), "items": items,
