@@ -50,7 +50,10 @@ body:has(.qxg) .section-main-page .page-content{max-width:none!important;width:1
 .qxg-num{display:inline-block;background:var(--soft);color:var(--c2)!important;border:1px solid #bfe3f7;border-radius:999px;padding:4px 12px;font-size:12px!important;font-weight:800;letter-spacing:.18em;margin-bottom:4px!important}
 .qxg-soft{background:linear-gradient(180deg,#e6f4fb 0%,#f4fafe 100%)}
 /* cta */
-.qxg-cta{padding:76px 0;text-align:center;color:#fff;background:radial-gradient(circle at 85% 20%,rgba(0,230,255,.55) 0,transparent 45%),radial-gradient(circle at 10% 90%,rgba(0,71,179,.6) 0,transparent 50%),linear-gradient(115deg,#0047b3 0%,#0094dd 50%,#00c2e0 100%)}
+.qxg-cta{padding:76px 0;text-align:center;color:#fff;background:radial-gradient(circle at 15% 20%,rgba(0,148,221,.35) 0,transparent 45%),radial-gradient(circle at 90% 90%,rgba(0,194,224,.25) 0,transparent 45%),linear-gradient(135deg,#2c3540 0%,#3d4752 55%,#4a5663 100%)}
+.qxg-btn-hot{background:linear-gradient(135deg,#ffd23f,#ffa51f);color:#2b2b2b!important;box-shadow:0 8px 22px rgba(255,165,31,.45);animation:qxgPulse 2.4s ease-in-out infinite}
+.qxg-btn-hot:hover{box-shadow:0 12px 30px rgba(255,165,31,.6)}
+@keyframes qxgPulse{0%,100%{box-shadow:0 8px 22px rgba(255,165,31,.45)}50%{box-shadow:0 8px 34px rgba(255,190,40,.8)}}
 .qxg-cta h2{color:#fff!important;font-size:clamp(26px,3vw,36px);margin-bottom:12px!important}
 .qxg-cta p{color:#e6f4fb;font-size:17px;margin-bottom:26px!important}
 .qxg-cta .qxg-btns{justify-content:center}
