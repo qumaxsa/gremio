@@ -104,6 +104,17 @@ def main():
     stock = {x["item_id"]: x for x in todo("stock") if x["item_id"] in ids}
     transito = [x for x in todo("in-transit-stock") if x.get("item_id") in ids]
 
+    # diagnóstico temporal: qué campos de texto trae cada producto y qué tan largos son (sin contenido)
+    diag = {}
+    for p in prods:
+        for k, v in p.items():
+            if isinstance(v, str) and v.strip():
+                d = diag.setdefault(k, {"con_dato": 0, "max": 0, "suma": 0})
+                d["con_dato"] += 1; d["max"] = max(d["max"], len(v)); d["suma"] += len(v)
+    diag = {k: {"con_dato": d["con_dato"], "max": d["max"], "prom": round(d["suma"] / d["con_dato"])} for k, d in diag.items()}
+    Path("diag-campos.json").write_text(json.dumps({"productos": len(prods), "campos": diag,
+        "todos_los_campos": sorted({k for p in prods for k in p})}, ensure_ascii=False, indent=1), encoding="utf-8")
+
     items = []
     for p in prods:
         pr = precios.get(p["item_id"])
