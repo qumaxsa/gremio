@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["keys.json", "tools/**", "index.html", "alta.html", ".github/workflows/lista.yml"]
+    paths: ["keys.json", "tools/**", "index.html", "alta.html", "panel/**", ".github/workflows/lista.yml"]
 
 permissions:
   contents: read
@@ -48,7 +48,7 @@ jobs:
       - name: Armar sitio y cifrar
         run: |
           mkdir site
-          cp -r .nojekyll robots.txt alta.html keys.json img landing site/
+          cp -r .nojekyll robots.txt alta.html keys.json img landing panel site/
           cp out/index.html site/index.html
           python3 -I tools/gremio_crypto.py cifrar keys.json out/web_data_*.json site
           rm -f pkg.json
