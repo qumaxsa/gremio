@@ -17,6 +17,8 @@ Comandos:
   python3 -I gremio_crypto.py list    <keys.json>
   python3 -I gremio_crypto.py cifrar  <keys.json> <web_data.json> <carpeta_sitio> [lista.xlsx]
   python3 -I gremio_crypto.py probar  <carpeta_sitio>        (stdin: usuario, contrasena; descifra para verificar)
+  python3 -I gremio_crypto.py pases   <keys.json> <mails.txt> <hashes.json>   (pase seguro por tecnico; el hash va a la
+                                                             planilla de tecnicos, columna J; adduser ya lo genera solo)
 Las contrasenas se leen de stdin y no se escriben en ningun archivo.
 """
 import base64, gzip, hashlib, json, os, sys
@@ -65,8 +67,41 @@ def cmd_adduser(path, user, pw):
         "salt": b64(salt), "iv": b64(iv),
         "wk": b64(AESGCM(_pwkey(pw, salt)).encrypt(iv, der, None)),
     }
+    ent, h = _pase(keys["users"][user_id(user)]["pub"])
+    keys["users"][user_id(user)]["pase"] = ent
     Path(path).write_text(json.dumps(keys, indent=1))
     print(f"OK usuario agregado. Total usuarios: {len(keys['users'])}")
+    print(f"PASE_HASH {h}   <- copiar en la planilla de técnicos, columna J")
+
+
+PASE_INFO = b"qumax-gremio-pase-v1"
+
+
+def _pase(pub_b64):
+    """Pase por usuario: token al azar cifrado a la clave pública del técnico (solo lo abre quien sabe su clave).
+    Devuelve (entrada para keys.json, hash SHA-256 hex que va a la planilla de técnicos, columna J)."""
+    tok = base64.urlsafe_b64encode(os.urandom(24)).decode().rstrip("=")
+    pub = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256R1(), ub64(pub_b64))
+    eph = ec.generate_private_key(ec.SECP256R1())
+    kek = HKDF(hashes.SHA256(), 32, bytes(32), PASE_INFO).derive(eph.exchange(ec.ECDH(), pub))
+    iv = os.urandom(12)
+    ent = {"eph": b64(eph.public_key().public_bytes(X962, UNC)), "iv": b64(iv),
+           "ct": b64(AESGCM(kek).encrypt(iv, tok.encode(), None))}
+    return ent, hashlib.sha256(tok.encode()).hexdigest()
+
+
+def cmd_pases(path, emails_file, out_hashes):
+    """Genera (o renueva) el pase de cada mail listado. Escribe {mail: hash} en out_hashes (para la planilla)."""
+    keys = _load(path)
+    res = {}
+    for mail in [l.strip().lower() for l in Path(emails_file).read_text().splitlines() if l.strip()]:
+        u = keys["users"].get(user_id(mail))
+        if not u:
+            print(f"AVISO: {mail} no está en keys.json"); continue
+        u["pase"], res[mail] = _pase(u["pub"])
+    Path(path).write_text(json.dumps(keys, indent=1))
+    Path(out_hashes).write_text(json.dumps(res, indent=1))
+    print(f"OK pases generados: {len(res)}")
 
 
 def cmd_deluser(path, user):
@@ -126,6 +161,8 @@ if __name__ == "__main__":
         cmd_deluser(args[0], args[1])
     elif cmd == "list":
         print(f"{len(_load(args[0])['users'])} usuarios")
+    elif cmd == "pases":
+        cmd_pases(*args)
     elif cmd == "cifrar":
         cmd_cifrar(*args)
     else:

@@ -69,6 +69,23 @@
   .btn-wa svg{width:32px;height:32px;fill:#fff}
   .cuenta{background:var(--soft);color:var(--accent2);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
   .empty{color:var(--muted);text-align:center;padding:40px 0}
+  /* mis pedidos */
+  #hist{position:fixed;inset:0;z-index:30;display:none;background:rgba(61,71,82,.35)}
+  #hist .panel{position:absolute;right:0;top:0;bottom:0;width:min(640px,100%);background:#fff;display:flex;flex-direction:column}
+  #hist .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  #hist .hd h3{margin:0;font-size:18px} #hist .x{background:none;border:0;font-size:26px;cursor:pointer;color:var(--muted)}
+  #hist .body{overflow:auto;padding:12px 18px 30px;flex:1}
+  .ped{border:1px solid var(--line);border-left:5px solid var(--accent);border-radius:12px;margin-bottom:12px;overflow:hidden}
+  .ped.Cancelado{border-left-color:#c4c9d0} .ped.Entregado{border-left-color:#005e8c}
+  .ped .ph{display:grid;grid-template-columns:1fr auto;gap:6px;padding:12px 14px;cursor:pointer}
+  .ped .pn{font-weight:800;font-size:15px} .ped .pf{font-size:12px;color:var(--muted)} .ped .pt{font-weight:800;color:var(--accent2);text-align:right}
+  .ped .pb{display:none;padding:0 14px 14px;font-size:13px} .ped.open .pb{display:block}
+  .ped table{box-shadow:none;margin:6px 0 10px} .ped td{font-size:12px;padding:6px} .ped th{font-size:11px;padding:6px}
+  .est{display:inline-block;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--soft);color:var(--accent2);margin-right:6px}
+  .est.Recibido{background:#ffd23f;color:#3d3d3d} .est.Entregado{background:#005e8c;color:#fff} .est.Cancelado{background:#eef1f4;color:#6b7280}
+  .pago{font-size:12px;font-weight:700} .pago.Pendiente{color:#8a5a00} .pago.Pagado{color:#1d6b3a}
+  .nota{background:var(--soft);border-radius:8px;padding:8px 10px;margin:6px 0 10px}
+  .rep{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;background:linear-gradient(135deg,#ffd23f,#ffa51f);color:#2b2b2b}
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
     header{flex-direction:column}
@@ -89,6 +106,7 @@
     <p id="sub">Precios de referencia para instaladores, en dólares con IVA incluido. Sujetos a cambio sin previo aviso. Disponibilidad aproximada.</p>
   </div>
   <div class="acts" id="acts" style="display:none">
+    <button class="btn" id="mis">📦 Mis pedidos</button>
     <button class="btn ghost" id="out">Salir</button>
   </div>
 </header>
@@ -134,11 +152,15 @@
   </div>
   <div class="ft"><button class="btn" id="send">Enviar pedido</button><div id="cmsg"></div></div>
 </div></div>
+<div id="hist"><div class="panel">
+  <div class="hd"><h3>Mis pedidos</h3><button class="x" id="hx" aria-label="Cerrar">×</button></div>
+  <div class="body" id="hlist"></div>
+</div></div>
 <footer>QUMAX S.A. · Lisandro de la Torre 323, Rafaela · Pedidos por WhatsApp __WHATSAPP__ · www.qumax.com.ar</footer>
 
 <script>
 const WA = "__WA_NUM__", ITER_DEF = 600000, PEDIDOS_URL = "__PEDIDOS_URL__";
-let USER = "", LISTA = "", CART = {};
+let USER = "", LISTA = "", CART = {}, PASE = "";
 const $ = id => document.getElementById(id);
 const ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
 const S = crypto.subtle;
@@ -154,7 +176,18 @@ async function unlock(user, pass){
   const base = await S.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
   const pk = await S.deriveKey({name:"PBKDF2", salt:ub64(e.salt), iterations:keys.iter||ITER_DEF, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
   let der; try { der = await S.decrypt({name:"AES-GCM", iv:ub64(e.iv)}, pk, ub64(e.wk)); } catch(_) { throw new Error("Usuario o clave incorrectos"); }
-  return {id, priv: await S.importKey("pkcs8", der, {name:"ECDH", namedCurve:"P-256"}, false, ["deriveBits"])};
+  const priv = await S.importKey("pkcs8", der, {name:"ECDH", namedCurve:"P-256"}, false, ["deriveBits"]);
+  PASE = e.pase ? await abrirPase(e.pase, priv).catch(() => "") : "";
+  return {id, priv};
+}
+
+// pase seguro: token que solo se abre con la clave del técnico; se manda con cada pedido o consulta
+async function abrirPase(pe, priv){
+  const eph = await S.importKey("raw", ub64(pe.eph), {name:"ECDH", namedCurve:"P-256"}, false, []);
+  const bits = await S.deriveBits({name:"ECDH", public:eph}, priv, 256);
+  const hk = await S.importKey("raw", bits, "HKDF", false, ["deriveKey"]);
+  const k = await S.deriveKey({name:"HKDF", hash:"SHA-256", salt:new Uint8Array(32), info:new TextEncoder().encode("qumax-gremio-pase-v1")}, hk, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  return new TextDecoder().decode(await S.decrypt({name:"AES-GCM", iv:ub64(pe.iv)}, k, ub64(pe.ct)));
 }
 
 async function loadData({id, priv}){
@@ -256,7 +289,7 @@ $("send").onclick = async () => {
   $("send").disabled = true; $("send").textContent = "Enviando…"; msg.className = ""; msg.textContent = "";
   try{
     const r = await fetch(PEDIDOS_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify({usuario: USER, comentario: $("f_com").value.trim(), lista: LISTA, hp: $("f_hp").value,
+      body: JSON.stringify({usuario: USER, pase: PASE, comentario: $("f_com").value.trim(), lista: LISTA, hp: $("f_hp").value,
         items: L.map(l => ({sku: l.d.articulo, detalle: l.d.detalle, qty: l.qty, precio: l.d.precio}))})});
     const j = await r.json();
     if(!j.ok) throw new Error(j.error || "No se pudo enviar");
@@ -267,6 +300,39 @@ $("send").onclick = async () => {
   }catch(e){ msg.className = "bad"; msg.textContent = (e.message || "No se pudo enviar") + ". Si sigue fallando, escribinos por WhatsApp al __WHATSAPP__."; }
   finally{ $("send").disabled = false; $("send").textContent = "Enviar pedido"; }
 };
+
+// ---------------- mis pedidos ----------------
+let PEDS = [];
+$("mis").onclick = async () => {
+  $("hist").style.display = "block"; $("hlist").innerHTML = '<div class="empty">Cargando tus pedidos…</div>';
+  try{
+    const r = await fetch(PEDIDOS_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify({tipo: "mis_pedidos", usuario: USER, pase: PASE})});
+    const j = await r.json(); if(!j.ok) throw new Error(j.error || "No se pudo cargar");
+    PEDS = j.pedidos || [];
+    $("hlist").innerHTML = PEDS.length ? PEDS.map((p, i) => `<div class="ped ${esc(p.estado.replace(/\s/g, ""))}">
+      <div class="ph" data-i="${i}"><div><div class="pn">Pedido ${esc(p.nro)}</div><div class="pf">${esc(p.fecha)} · ${p.items.length} artículos</div>
+        <div style="margin-top:6px"><span class="est ${esc(p.estado.replace(/\s/g, ""))}">${esc(p.estado)}</span><span class="pago ${esc(p.pago)}">Pago ${esc(p.pago.toLowerCase())}</span></div></div>
+        <div class="pt">US$ ${esc(p.total)}</div></div>
+      <div class="pb">${p.nota ? `<div class="nota"><b>Nota de Qumax:</b> ${esc(p.nota)}</div>` : ""}
+        <table><tr><th>Artículo</th><th>Unid.</th><th>Precio</th><th>Subtotal</th></tr>${p.items.map(x => `<tr><td><b>${esc(x.sku)}</b></td><td>${esc(x.qty)}</td><td>${esc(x.precio)}</td><td>${esc(x.subtotal)}</td></tr>`).join("")}</table>
+        ${p.comentario ? `<div class="pf" style="margin-bottom:8px">Tu comentario: ${esc(p.comentario)}</div>` : ""}
+        <button class="rep" data-i="${i}">🔁 Repetir pedido</button> <span class="pf rmsg"></span>
+        <div class="pf" style="margin-top:6px">Última actualización: ${esc(p.actualizado)}</div></div></div>`).join("")
+      : '<div class="empty">Todavía no hiciste pedidos desde la lista.</div>';
+  }catch(e){ $("hlist").innerHTML = '<div class="empty">' + esc(e.message || e) + '</div>'; }
+};
+$("hx").onclick = () => $("hist").style.display = "none";
+$("hist").addEventListener("click", ev => {
+  if(ev.target.id === "hist"){ $("hist").style.display = "none"; return; }
+  const h = ev.target.closest(".ph"); if(h){ h.parentElement.classList.toggle("open"); return; }
+  const b = ev.target.closest(".rep"); if(!b) return;
+  const p = PEDS[+b.dataset.i], by = BY(); let ok = 0, falta = [];
+  p.items.forEach(x => { const q = Math.max(1, Math.floor(Number(String(x.qty).replace(",", ".")) || 1));
+    if(by[x.sku]){ CART[x.sku] = {qty: Math.min(9999, (CART[x.sku]?.qty || 0) + q)}; ok++; } else falta.push(x.sku); });
+  saveCart(); paintCart(); render();
+  b.parentElement.querySelector(".rmsg").textContent = "✓ " + ok + " artículos agregados al carrito con el precio de hoy" + (falta.length ? ". No están en la lista actual: " + falta.join(", ") : "");
+});
 
 $("out").onclick = () => location.reload();
 $("login").onsubmit = async ev => {
