@@ -12,9 +12,9 @@ body:has(.qxg) .section-main-page .page-content{max-width:none!important;width:1
 .qxg h1,.qxg h2,.qxg h3{margin:0;font-weight:800;letter-spacing:-.01em}
 .qxg-wrap{max-width:1200px;margin:0 auto;padding:0 24px}
 /* hero */
-.qxg-hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(120deg,#005e8c 0%,#0077b3 40%,#0094dd 100%)}
+.qxg-hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(circle at 85% 20%,rgba(0,230,255,.55) 0,transparent 45%),radial-gradient(circle at 10% 90%,rgba(0,71,179,.6) 0,transparent 50%),linear-gradient(115deg,#0047b3 0%,#0094dd 50%,#00c2e0 100%)}
 .qxg-hero:before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1.4px,transparent 1.5px);background-size:30px 30px;pointer-events:none}
-.qxg-hero:after{content:"";position:absolute;width:620px;height:620px;right:-160px;top:-220px;border-radius:50%;background:rgba(255,255,255,.06);pointer-events:none}
+.qxg-hero:after{content:"";position:absolute;width:620px;height:620px;right:-160px;top:-220px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
 .qxg-hero-sil{position:absolute;left:-2%;bottom:-6px;width:46%;opacity:.10;pointer-events:none}
 .qxg-hero-sil img{display:block;width:100%}
 .qxg-hero-in{position:relative;z-index:1;display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:center;min-height:560px;padding-top:56px;padding-bottom:56px}
@@ -50,7 +50,7 @@ body:has(.qxg) .section-main-page .page-content{max-width:none!important;width:1
 .qxg-num{display:inline-block;background:var(--soft);color:var(--c2)!important;border:1px solid #bfe3f7;border-radius:999px;padding:4px 12px;font-size:12px!important;font-weight:800;letter-spacing:.18em;margin-bottom:4px!important}
 .qxg-soft{background:linear-gradient(180deg,#e6f4fb 0%,#f4fafe 100%)}
 /* cta */
-.qxg-cta{padding:76px 0;text-align:center;color:#fff;background:linear-gradient(120deg,#005e8c,#0094dd)}
+.qxg-cta{padding:76px 0;text-align:center;color:#fff;background:radial-gradient(circle at 85% 20%,rgba(0,230,255,.55) 0,transparent 45%),radial-gradient(circle at 10% 90%,rgba(0,71,179,.6) 0,transparent 50%),linear-gradient(115deg,#0047b3 0%,#0094dd 50%,#00c2e0 100%)}
 .qxg-cta h2{color:#fff!important;font-size:clamp(26px,3vw,36px);margin-bottom:12px!important}
 .qxg-cta p{color:#e6f4fb;font-size:17px;margin-bottom:26px!important}
 .qxg-cta .qxg-btns{justify-content:center}
