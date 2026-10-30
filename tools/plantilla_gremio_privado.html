@@ -102,7 +102,12 @@
   .datos{background:var(--soft);border-radius:12px;padding:14px 16px;margin-bottom:16px}
   .datos h4{margin:0 0 8px;font-size:15px;color:var(--accent2)}
   .datos dl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:0;font-size:13px} .datos dt{color:var(--muted)} .datos dd{margin:0;font-weight:600;overflow-wrap:anywhere}
-  .datos .pf{margin-top:10px} .datos a{color:var(--accent2);font-weight:700}
+  .datos .pf{margin-top:10px;font-size:12px;color:var(--muted)} .datos a{color:var(--accent2);font-weight:700}
+  .datos .hd2{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px} .datos .hd2 h4{margin:0}
+  .datos .ed{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--accent);color:var(--accent2);background:#fff;border-radius:999px;padding:5px 12px;cursor:pointer}
+  .datos form{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;align-items:center;font-size:13px}
+  .datos form label{color:var(--muted)} .datos form input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid #d1d5db;border-radius:8px;width:100%}
+  .datos form .bt{grid-column:1/-1;display:flex;gap:8px;align-items:center;margin-top:4px} .datos .dmsg{font-size:12px;font-weight:600}
   .rep{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;background:linear-gradient(135deg,#ffd23f,#ffa51f);color:#2b2b2b}
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
@@ -337,7 +342,33 @@ $("send").onclick = async () => {
 };
 
 // ---------------- mis pedidos ----------------
-let PEDS = [];
+let PEDS = [], DATOS = null;
+const F_DATOS = [["nombre", "Nombre", "text", 80], ["empresa", "Empresa", "text", 80], ["telefono", "Celular", "tel", 30], ["email", "Email de aviso", "email", 120]];
+function verDatos(msg){
+  const fila = (k, v) => `<dt>${k}</dt><dd>${esc(v || "(sin cargar)")}</dd>`;
+  $("datos").innerHTML = `<div class="hd2"><h4>👤 Mis datos</h4><button class="ed" id="ded">✏️ Editar</button></div>
+    <dl>${F_DATOS.map(f => fila(f[1], DATOS[f[0]])).join("")}${fila("Usuario", DATOS.usuario || USER)}</dl>
+    ${msg ? `<div class="pf dmsg" style="color:var(--accent2)">${esc(msg)}</div>` : ""}
+    <div class="pf">El usuario de ingreso no se puede cambiar. Para eso escribinos por <a href="https://wa.me/${WA}" target="_blank" rel="noopener">WhatsApp</a> o a <a href="mailto:info@qumax.com.ar?subject=Cambio%20de%20datos%20lista%20gremio">info@qumax.com.ar</a>.</div>`;
+  $("ded").onclick = editarDatos;
+}
+function editarDatos(){
+  $("datos").innerHTML = `<div class="hd2"><h4>👤 Editar mis datos</h4></div><form id="dform" novalidate>
+    ${F_DATOS.map(f => `<label for="d_${f[0]}">${f[1]}</label><input id="d_${f[0]}" type="${f[2]}" maxlength="${f[3]}" value="${esc(DATOS[f[0]] || "")}">`).join("")}
+    <div class="bt"><button class="btn" type="submit" id="dsave">Guardar</button><button class="ed" type="button" id="dcan">Cancelar</button><span class="dmsg" id="dmsg"></span></div></form>`;
+  $("dcan").onclick = () => verDatos();
+  $("dform").onsubmit = async ev => {
+    ev.preventDefault();
+    const body = {tipo: "mis_datos", usuario: USER, pase: PASE};
+    F_DATOS.forEach(f => body[f[0]] = $("d_" + f[0]).value.trim());
+    $("dsave").disabled = true; $("dsave").textContent = "Guardando…"; $("dmsg").textContent = "";
+    try{
+      const r = await fetch(PEDIDOS_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(body)});
+      const j = await r.json(); if(!j.ok) throw new Error(j.error || "No se pudo guardar");
+      DATOS = j.datos || DATOS; verDatos(j.sinCambios ? "No había cambios para guardar." : "✓ Datos actualizados. Le avisamos a Qumax.");
+    }catch(e){ $("dmsg").style.color = "var(--dark)"; $("dmsg").textContent = e.message || "No se pudo guardar"; $("dsave").disabled = false; $("dsave").textContent = "Guardar"; }
+  };
+}
 $("mis").onclick = async () => {
   $("hist").style.display = "block"; $("hlist").innerHTML = '<div class="empty">Cargando tus pedidos…</div>';
   try{
@@ -345,9 +376,8 @@ $("mis").onclick = async () => {
       body: JSON.stringify({tipo: "mis_pedidos", usuario: USER, pase: PASE})});
     const j = await r.json(); if(!j.ok) throw new Error(j.error || "No se pudo cargar");
     PEDS = j.pedidos || [];
-    const dt = j.datos || {}, fila = (k, v) => `<dt>${k}</dt><dd>${esc(v || "(sin cargar)")}</dd>`;
-    const datos = !j.datos ? "" : `<div class="datos"><h4>👤 Mis datos</h4><dl>${fila("Nombre", dt.nombre)}${fila("Empresa", dt.empresa)}${fila("Celular", dt.telefono)}${fila("Email de aviso", dt.email)}${fila("Usuario", dt.usuario || USER)}</dl>
-      <div class="pf">¿Hay algo para corregir? Escribinos por <a href="https://wa.me/${WA}" target="_blank" rel="noopener">WhatsApp</a> o a <a href="mailto:info@qumax.com.ar?subject=Cambio%20de%20datos%20lista%20gremio">info@qumax.com.ar</a>.</div></div>`;
+    DATOS = j.datos || null;
+    const datos = DATOS ? '<div class="datos" id="datos"></div>' : "";
     $("hlist").innerHTML = datos + (PEDS.length ? PEDS.map((p, i) => `<div class="ped ${esc(p.estado.replace(/\s/g, ""))}">
       <div class="ph" data-i="${i}"><div><div class="pn">Pedido ${esc(p.nro)}</div><div class="pf">${esc(p.fecha)} · ${p.items.length} artículos</div>
         <div style="margin-top:6px"><span class="est ${esc(p.estado.replace(/\s/g, ""))}">${esc(p.estado)}</span><span class="pago ${esc(p.pago)}">Pago ${esc(p.pago.toLowerCase())}</span></div></div>
@@ -358,6 +388,7 @@ $("mis").onclick = async () => {
         <button class="rep" data-i="${i}">🔁 Repetir pedido</button> <span class="pf rmsg"></span>
         <div class="pf" style="margin-top:6px">Última actualización: ${esc(p.actualizado)}</div></div></div>`).join("")
       : '<div class="empty">Todavía no hiciste pedidos desde la lista.</div>');
+    if(DATOS) verDatos();
   }catch(e){ $("hlist").innerHTML = '<div class="empty">' + esc(e.message || e) + '</div>'; }
 };
 $("hx").onclick = () => $("hist").style.display = "none";
