@@ -53,6 +53,23 @@ CTRL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 EXCLUIR_CAT = re.compile(r"\b(outlet|ofertas?)\b", re.I)
 
 
+def texto_largo(s):
+    """Descripción larga para la ficha: sin HTML, sin links, mails, teléfonos ni datos del proveedor.
+    Las líneas con algo prohibido se descartan (no frenan la publicación)."""
+    s = str(s or "")
+    s = re.sub(r"(?i)<\s*(br|/p|/li|/div|/h\d|/tr)\s*/?>", "\n", s)
+    s = re.sub(r"(?i)<\s*li[^>]*>", "• ", s)
+    s = html.unescape(re.sub(r"<[^>]+>", " ", s))
+    s = CTRL.sub(" ", s.replace("\r", "\n"))
+    out = []
+    for ln in s.split("\n"):
+        ln = re.sub(r"[ \t\u00a0]+", " ", ln).strip()
+        if not ln or FORBIDDEN.search(ln) or re.search(r"@|\+?\d[\d\s().-]{7,}\d", ln) and re.search(r"(?i)tel|cel|whats|mail|@", ln):
+            continue
+        out.append(ln)
+    return re.sub(r"\n{3,}", "\n\n", "\n".join(out)).strip()[:4000]
+
+
 def clean(s):
     return re.sub(r"\s+", " ", CTRL.sub(" ", str(s or ""))).strip()
 
@@ -96,6 +113,7 @@ def build_rows(pkg):
             marca="Hikvision",
             articulo=clean(x["Artículo"]).rstrip("@").strip(),
             detalle=clean(x["Detalle Categoría"]).rstrip(","),
+            detalle_largo=texto_largo(x.get("Descripción larga")),
             categoria=clean(x["Categoría"]),
             subcategoria=clean(x["Sub Categoría"]),
             disponibilidad=stock_label(num(x["Stock (*)"])),
@@ -219,7 +237,7 @@ def fotos_grandes(rows, pkg, outdir, imgs):
 
 def build_html(rows, imgs, fecha, out, big=None):
     big = big or {}
-    data = [{k: r[k] for k in ("articulo", "detalle", "categoria", "subcategoria", "disponibilidad", "ingresos", "precio", "iva")}
+    data = [{k: r[k] for k in ("articulo", "detalle", "detalle_largo", "categoria", "subcategoria", "disponibilidad", "ingresos", "precio", "iva")}
             | {"img": ("data:image/jpeg;base64," + imgs[r["ean"]]) if r["ean"] in imgs else "", "big": big.get(r["ean"], "")} for r in rows]
     tpl = Path(__file__).with_name("plantilla_web.html").read_text(encoding="utf-8")
     page = (tpl.replace("__FECHA__", html.escape(fecha))
