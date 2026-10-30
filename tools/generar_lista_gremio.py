@@ -18,7 +18,7 @@ Reglas:
             Precio gremio USD (IVA incl.), IVA %.
   Nada del proveedor: sin codigo EAN, sin precio distribuidor, sin links, logos, mails ni telefonos.
 """
-import base64, io, json, os, re, sys, html
+import base64, hashlib, io, json, os, re, shutil, sys, html
 from collections import Counter, OrderedDict
 from datetime import datetime
 from pathlib import Path
@@ -204,9 +204,23 @@ def visibles(rows):
     return [r for r in rows if r["disponibilidad"] != "Sin stock" or r["ingresos"]]
 
 
-def build_html(rows, imgs, fecha, out):
+def fotos_grandes(rows, pkg, outdir, imgs):
+    """Copia las fotos grandes a <salida>/f/<id>.jpg (id = hash del código, sin datos del proveedor)."""
+    src, dst, ids = Path(pkg.get("cache") or "fotos_cache"), Path(outdir) / "f", {}
+    dst.mkdir(parents=True, exist_ok=True)
+    for r in rows:
+        name = (pkg.get("imgs_g") or {}).get(r["ean"])
+        if name and r["ean"] in imgs and (src / name).exists():   # sin la foto genérica de "sin imagen"
+            fid = hashlib.sha256(("qx-foto:" + r["ean"]).encode()).hexdigest()[:16]
+            shutil.copyfile(src / name, dst / f"{fid}.jpg")
+            ids[r["ean"]] = fid
+    return ids
+
+
+def build_html(rows, imgs, fecha, out, big=None):
+    big = big or {}
     data = [{k: r[k] for k in ("articulo", "detalle", "categoria", "subcategoria", "disponibilidad", "ingresos", "precio", "iva")}
-            | {"img": ("data:image/jpeg;base64," + imgs[r["ean"]]) if r["ean"] in imgs else ""} for r in rows]
+            | {"img": ("data:image/jpeg;base64," + imgs[r["ean"]]) if r["ean"] in imgs else "", "big": big.get(r["ean"], "")} for r in rows]
     tpl = Path(__file__).with_name("plantilla_web.html").read_text(encoding="utf-8")
     page = (tpl.replace("__FECHA__", html.escape(fecha))
                .replace("__WHATSAPP__", QUMAX["whatsapp"])
@@ -241,7 +255,9 @@ def main():
     web = outdir / f"Lista_Gremio_Qumax_Hikvision_{tag}.html"
     if not os.environ.get("GREMIO_SIN_EXCEL"):
         build_excel(rows, imgs, fecha, xlsx)
-    build_html(rows, imgs, fecha, web)
+    big = fotos_grandes(rows, pkg, outdir, imgs)
+    print(f"Fotos grandes publicadas: {len(big)}")
+    build_html(rows, imgs, fecha, web, big)
     json.dump([{k: v for k, v in r.items() if k != "ean"} for r in rows],
               open(outdir / f"lista_gremio_{tag}.json", "w", encoding="utf-8"), ensure_ascii=False)
     c = Counter(r["disponibilidad"] for r in rows)

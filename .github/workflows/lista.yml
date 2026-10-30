@@ -50,6 +50,7 @@ jobs:
           mkdir site
           cp -r .nojekyll robots.txt alta.html keys.json img landing panel site/
           cp out/index.html site/index.html
+          cp -r out/f site/f
           python3 -I tools/gremio_crypto.py cifrar keys.json out/web_data_*.json site
           rm -f pkg.json
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3

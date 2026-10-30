@@ -109,6 +109,17 @@
   .datos form label{color:var(--muted)} .datos form input{font:inherit;font-size:14px;padding:7px 9px;border:1px solid #d1d5db;border-radius:8px;width:100%}
   .datos form .bt{grid-column:1/-1;display:flex;gap:8px;align-items:center;margin-top:4px} .datos .dmsg{font-size:12px;font-weight:600}
   .rep{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;background:linear-gradient(135deg,#ffd23f,#ffa51f);color:#2b2b2b}
+  /* ficha ampliada */
+  td.img img{cursor:zoom-in} td.det .clamp{cursor:pointer} td.det .mas{display:inline-block;margin-top:3px;font-size:12px;font-weight:700;color:var(--accent2);cursor:pointer}
+  #ficha{position:fixed;inset:0;z-index:40;display:none;background:rgba(61,71,82,.55);padding:20px;overflow:auto}
+  #ficha .box{position:relative;max-width:760px;margin:30px auto;background:#fff;border-radius:14px;padding:22px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+  #ficha .x{position:absolute;right:10px;top:8px;z-index:1;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.92);border:0;font-size:28px;cursor:pointer;color:var(--muted)}
+  #ficha .ph{background:#fff;border:1px solid var(--line);border-radius:10px;display:flex;align-items:center;justify-content:center;min-height:240px;padding:10px}
+  #ficha .ph img{max-width:100%;max-height:420px;object-fit:contain} #ficha .ph .sinf{color:var(--muted);font-size:13px}
+  #ficha h3{margin:0 0 4px;font-size:20px;overflow-wrap:anywhere} #ficha .cat{font-size:12px;color:var(--muted);margin-bottom:10px}
+  #ficha .pr{font-size:22px;font-weight:800;color:var(--accent2);margin:10px 0 2px} #ficha .pr small{font-size:12px;font-weight:600;color:var(--muted)}
+  #ficha .txt{font-size:14px;line-height:1.5;color:#374151;white-space:pre-line;margin:12px 0;max-height:300px;overflow:auto}
+  @media (max-width:640px){ #ficha{padding:8px} #ficha .box{grid-template-columns:1fr;margin:10px auto;padding:16px} }
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
     header{flex-direction:column}
@@ -178,6 +189,7 @@
   </div>
   <div class="ft"><button class="btn" id="send">Enviar pedido</button><div id="cmsg"></div></div>
 </div></div>
+<div id="ficha"><div class="box" id="fbox"></div></div>
 <div id="hist"><div class="panel">
   <div class="hd"><h3>Mis pedidos</h3><button class="x" id="hx" aria-label="Cerrar">×</button></div>
   <div class="body" id="hlist"></div>
@@ -251,9 +263,9 @@ function render(){
     &&q.every(w=>(d.articulo+" "+d.detalle+" "+d.subcategoria).toLowerCase().includes(w)));
   $("count").textContent=list.length+" artículos";
   $("rows").innerHTML=list.map(d=>`<tr>
-    <td class="img">${d.img?`<img loading="lazy" src="${d.img}" alt="">`:""}</td>
+    <td class="img">${d.img?`<img loading="lazy" src="${d.img}" alt="Ampliar foto" title="Ampliar" data-f="${esc(d.articulo)}">`:""}</td>
     <td class="art">${esc(d.articulo)}</td>
-    <td class="det"><div class="clamp" title="${esc(d.detalle)}">${esc(d.detalle)}</div></td>
+    <td class="det"><div class="clamp" data-f="${esc(d.articulo)}">${esc(d.detalle)}</div>${d.detalle.length > 110 ? `<span class="mas" data-f="${esc(d.articulo)}">Ver más ›</span>` : ""}</td>
     <td class="cat">${esc(d.categoria)} · ${esc(d.subcategoria)}</td>
     <td><span class="pill ${cls[d.disponibilidad]}">${d.disponibilidad}</span>${d.ingresos?`<br><span class="pill tr">${d.ingresos}</span>`:""}</td>
     <td class="price">${fmt(d.precio)}</td>
@@ -261,6 +273,32 @@ function render(){
   </tr>`).join("");
 }
 $("cat").onchange=()=>{fillSub();render()}; ["q","subc"].forEach(id=>$(id).addEventListener("input",render));
+
+// ---------------- ficha ampliada (foto grande y descripción completa) ----------------
+let FICHA = "";
+function ficha(k){
+  const d = BY()[k]; if(!d) return; FICHA = k;
+  const foto = d.big ? `f/${encodeURIComponent(d.big)}.jpg` : d.img;
+  $("fbox").innerHTML = `<button class="x" id="fx" aria-label="Cerrar">×</button>
+    <div class="ph">${foto ? `<img src="${foto}" alt="${esc(d.articulo)}" onerror="this.onerror=null;this.src='${d.img}'">` : '<span class="sinf">Sin foto</span>'}</div>
+    <div><h3>${esc(d.articulo)}</h3><div class="cat">${esc(d.categoria)} · ${esc(d.subcategoria)}</div>
+      <span class="pill ${cls[d.disponibilidad]}">${d.disponibilidad}</span>${d.ingresos ? ` <span class="pill tr">${d.ingresos}</span>` : ""}
+      <div class="pr">${fmt(d.precio)} <small>IVA incl. (${d.iva}%)</small></div>
+      <div class="txt">${esc(d.detalle) || "Sin descripción."}</div>
+      <div>${CART[k] ? `<div class="step"><button class="mn" data-k="${esc(k)}" aria-label="Restar">−</button><input type="number" min="0" max="9999" class="qy" data-k="${esc(k)}" value="${CART[k].qty}" aria-label="Cantidad"><button class="pl" data-k="${esc(k)}" aria-label="Sumar">+</button></div>` : `<button class="add" data-k="${esc(k)}">+ Agregar al pedido</button>`}</div></div>`;
+  $("ficha").style.display = "block";
+  $("fx").onclick = cerrarFicha;
+}
+function cerrarFicha(){ $("ficha").style.display = "none"; FICHA = ""; }
+$("rows").addEventListener("click", ev => { const t = ev.target.closest("[data-f]"); if(t) ficha(t.dataset.f); });
+$("ficha").addEventListener("click", ev => { if(ev.target.id === "ficha") cerrarFicha(); });
+$("ficha").addEventListener("change", ev => {
+  const i = ev.target.closest("input.qy"); if(!i) return;
+  const q = Math.max(0, Math.min(9999, Math.floor(Number(i.value) || 0)));
+  if(q) CART[i.dataset.k] = {qty: q}; else delete CART[i.dataset.k];
+  saveCart(); paintCart(); render(); ficha(i.dataset.k);
+});
+document.addEventListener("keydown", ev => { if(ev.key === "Escape" && FICHA) cerrarFicha(); });
 
 // ---------------- dólar BNA (referencia) ----------------
 async function dolarBNA(){
@@ -307,6 +345,7 @@ document.addEventListener("click", ev => {
   const m = ev.target.closest(".step button.mn"); if(m){ const k = m.dataset.k, q = (CART[k]?.qty || 0) - 1; if(q > 0) CART[k] = {qty: q}; else delete CART[k]; saveCart(); paintCart(); render(); return; }
   const r = ev.target.closest("button.rm"); if(r){ delete CART[r.dataset.r]; saveCart(); paintCart(); render(); }
 });
+document.addEventListener("click", ev => { if(FICHA && ev.target.closest("#fbox button.add, #fbox .step button")) ficha(FICHA); });
 $("rows").addEventListener("change", ev => {
   const i = ev.target.closest("input.qy"); if(!i) return;
   const q = Math.max(0, Math.min(9999, Math.floor(Number(i.value) || 0)));

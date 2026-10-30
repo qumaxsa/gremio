@@ -71,6 +71,25 @@ def foto(url, cache):
     return base64.b64encode(f.read_bytes()).decode()
 
 
+def foto_grande(url, cache):
+    """Foto grande (máx. 480x360, JPG) para ampliar en la lista. Se re-aloja en el sitio de Qumax.
+    Devuelve el nombre del archivo en la caché o None."""
+    if not url:
+        return None
+    name = "g480_" + url.rsplit("/", 1)[-1].rsplit(".", 1)[0] + ".jpg"
+    f = cache / name
+    if not f.exists():
+        try:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=UA), timeout=30) as r:
+                im = Image.open(io.BytesIO(r.read())).convert("RGB")
+            im.thumbnail((480, 360))
+            buf = io.BytesIO(); im.save(buf, "JPEG", quality=78, optimize=True)
+            f.write_bytes(buf.getvalue())
+        except Exception:
+            return None
+    return name
+
+
 def main():
     out = Path(sys.argv[1])
     cache = Path(sys.argv[2] if len(sys.argv) > 2 else "fotos_cache"); cache.mkdir(parents=True, exist_ok=True)
@@ -102,15 +121,19 @@ def main():
             "Precio Gremio USD": str(pr["price_no_list"]),   # precio gremio (nunca "price")
             "IVA": str(pr.get("iva", 21)),
             "_foto": p.get("image_url_100") or "",
+            "_foto_g": p.get("image_url_400") or p.get("image_url_250") or "",
         })
 
     with ThreadPoolExecutor(8) as ex:
         fotos = list(ex.map(lambda x: foto(x["_foto"], cache), items))
-    imgs = {}
-    for x, b in zip(items, fotos):
+        grandes = list(ex.map(lambda x: foto_grande(x["_foto_g"], cache), items))
+    imgs, imgs_g = {}, {}
+    for x, b, g in zip(items, fotos, grandes):
         if b:
             imgs[x["Código EAN"]] = b
-        x.pop("_foto")
+        if g:
+            imgs_g[x["Código EAN"]] = g
+        x.pop("_foto"); x.pop("_foto_g")
 
     # CONTROL DE PRECIOS: se publica solo el precio gremio (price_no_list, sin IVA; la lista le suma el IVA).
     # Si algún precio gremio es menor que el costo o falta, algo cambió en la API: no se publica nada.
@@ -121,9 +144,10 @@ def main():
     if len(items) < 800:
         raise SystemExit(f"Muy pocos artículos ({len(items)}): algo cambió en la API, no se publica")
     pkg = {"fecha": datetime.now(timezone.utc).isoformat(), "items": items,
-           "transito": {"products": transito}, "imgs": imgs}
+           "transito": {"products": transito}, "imgs": imgs,
+           "imgs_g": imgs_g, "cache": str(cache)}
     out.write_text(json.dumps(pkg, ensure_ascii=False), encoding="utf-8")
-    print(f"OK API {len(items)} artículos | fotos {len(imgs)} | tránsito {len(transito)} | {time.time() - t0:.0f}s")
+    print(f"OK API {len(items)} artículos | fotos {len(imgs)} | fotos grandes {len(imgs_g)} | tránsito {len(transito)} | {time.time() - t0:.0f}s")
 
 
 if __name__ == "__main__":
