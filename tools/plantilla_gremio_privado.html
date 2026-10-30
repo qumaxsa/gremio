@@ -99,6 +99,10 @@
   .est.Recibido{background:#ffd23f;color:#3d3d3d} .est.Entregado{background:#005e8c;color:#fff} .est.Cancelado{background:#eef1f4;color:#6b7280}
   .pago{font-size:12px;font-weight:700} .pago.Pendiente{color:#8a5a00} .pago.Pagado{color:#1d6b3a}
   .nota{background:var(--soft);border-radius:8px;padding:8px 10px;margin:6px 0 10px}
+  .datos{background:var(--soft);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+  .datos h4{margin:0 0 8px;font-size:15px;color:var(--accent2)}
+  .datos dl{display:grid;grid-template-columns:110px 1fr;gap:4px 10px;margin:0;font-size:13px} .datos dt{color:var(--muted)} .datos dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+  .datos .pf{margin-top:10px} .datos a{color:var(--accent2);font-weight:700}
   .rep{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;background:linear-gradient(135deg,#ffd23f,#ffa51f);color:#2b2b2b}
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
@@ -341,7 +345,10 @@ $("mis").onclick = async () => {
       body: JSON.stringify({tipo: "mis_pedidos", usuario: USER, pase: PASE})});
     const j = await r.json(); if(!j.ok) throw new Error(j.error || "No se pudo cargar");
     PEDS = j.pedidos || [];
-    $("hlist").innerHTML = PEDS.length ? PEDS.map((p, i) => `<div class="ped ${esc(p.estado.replace(/\s/g, ""))}">
+    const dt = j.datos || {}, fila = (k, v) => `<dt>${k}</dt><dd>${esc(v || "(sin cargar)")}</dd>`;
+    const datos = !j.datos ? "" : `<div class="datos"><h4>👤 Mis datos</h4><dl>${fila("Nombre", dt.nombre)}${fila("Empresa", dt.empresa)}${fila("Celular", dt.telefono)}${fila("Email de aviso", dt.email)}${fila("Usuario", dt.usuario || USER)}</dl>
+      <div class="pf">¿Hay algo para corregir? Escribinos por <a href="https://wa.me/${WA}" target="_blank" rel="noopener">WhatsApp</a> o a <a href="mailto:info@qumax.com.ar?subject=Cambio%20de%20datos%20lista%20gremio">info@qumax.com.ar</a>.</div></div>`;
+    $("hlist").innerHTML = datos + (PEDS.length ? PEDS.map((p, i) => `<div class="ped ${esc(p.estado.replace(/\s/g, ""))}">
       <div class="ph" data-i="${i}"><div><div class="pn">Pedido ${esc(p.nro)}</div><div class="pf">${esc(p.fecha)} · ${p.items.length} artículos</div>
         <div style="margin-top:6px"><span class="est ${esc(p.estado.replace(/\s/g, ""))}">${esc(p.estado)}</span><span class="pago ${esc(p.pago)}">Pago ${esc(p.pago.toLowerCase())}</span></div></div>
         <div class="pt">US$ ${esc(p.total)}</div></div>
@@ -350,7 +357,7 @@ $("mis").onclick = async () => {
         ${p.comentario ? `<div class="pf" style="margin-bottom:8px">Tu comentario: ${esc(p.comentario)}</div>` : ""}
         <button class="rep" data-i="${i}">🔁 Repetir pedido</button> <span class="pf rmsg"></span>
         <div class="pf" style="margin-top:6px">Última actualización: ${esc(p.actualizado)}</div></div></div>`).join("")
-      : '<div class="empty">Todavía no hiciste pedidos desde la lista.</div>';
+      : '<div class="empty">Todavía no hiciste pedidos desde la lista.</div>');
   }catch(e){ $("hlist").innerHTML = '<div class="empty">' + esc(e.message || e) + '</div>'; }
 };
 $("hx").onclick = () => $("hist").style.display = "none";
