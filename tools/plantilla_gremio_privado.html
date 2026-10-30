@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Lista Gremio · Qumax</title>
+<style>
+  :root{--dark:#3d4752;--accent:#0094dd;--accent2:#0077b3;--soft:#e6f4fb;--bg:#f4fafe;--card:#fff;--muted:#6b7280;--line:#e3eef6}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--dark)}
+  header{background:var(--accent);color:#fff;padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  header .logo{display:block;height:40px;width:auto;margin:0 0 6px}
+  header h1{margin:4px 0 2px;font-size:16px;font-weight:600}
+  header p{margin:0;font-size:13px;opacity:.92}
+  header .acts .btn:not(.ghost){background:#fff;color:var(--accent2)} header .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.8)}
+  /* login */
+  #login{max-width:380px;margin:60px auto;background:#fff;border-radius:14px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+  #login h2{margin:0 0 4px;font-size:20px} #login p{margin:0 0 18px;color:var(--muted);font-size:14px}
+  #login label{display:block;font-size:13px;font-weight:600;margin:12px 0 4px}
+  #login input[type=text],#login input[type=password]{width:100%;font:inherit;padding:11px 12px;border:1px solid #d1d5db;border-radius:8px}
+  #login .btn{width:100%;padding:12px;font-size:15px;margin-top:20px}
+  #err{color:var(--dark);font-weight:600;font-size:13px;min-height:18px;margin-top:10px}
+  #login .help{font-size:12px;color:var(--muted);margin-top:16px;text-align:center} #login .help a{color:var(--accent2)}
+  /* lista */
+  #app{display:none}
+  .bar{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:10px 20px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .bar input,.bar select{font:inherit;font-size:14px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff}
+  .bar input[type=search]{flex:1 1 220px}
+  .bar label{font-size:14px;display:flex;gap:6px;align-items:center;white-space:nowrap}
+  .count{font-size:13px;color:var(--muted);margin-left:auto}
+  main{padding:14px 20px 40px;max-width:1200px;margin:0 auto}
+  table{width:100%;table-layout:fixed;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+  th{background:var(--soft);color:var(--accent2);font-size:13px;text-align:left;padding:10px}
+  td{padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle}
+  td.img img{width:80px;height:60px;object-fit:contain;display:block}
+  td.art{font-weight:700;overflow-wrap:anywhere} td.det{color:#374151;font-size:13px} .clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  td.cat{font-size:12px;color:var(--muted)}
+  td.price{color:var(--accent2);font-weight:800;font-size:15px;white-space:nowrap;text-align:right}
+  .pill{display:inline-block;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+  .alto{background:#0094dd;color:#fff}.normal{background:#d6eefa;color:#005e8c}.bajo{background:#eef1f4;color:#4b5563;border:1px solid #d5dbe1}.sin{background:#f5f6f8;color:#9aa1aa}
+  .tr{background:#fff;color:#0077b3;border:1px dashed #0094dd;margin-top:4px}
+  a.wa{font-size:12px;color:var(--accent2);text-decoration:none;font-weight:700;white-space:nowrap}
+  /* carrito */
+  button.add{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:8px;padding:6px 8px;cursor:pointer;white-space:nowrap}
+  .step{display:inline-flex;align-items:center;border:1px solid var(--accent);border-radius:8px;overflow:hidden;background:#fff}
+  .step button{font:inherit;font-size:16px;font-weight:800;width:30px;height:30px;border:0;background:var(--accent);color:#fff;cursor:pointer;line-height:1}
+  .step input{width:42px;height:30px;border:0;text-align:center;font:inherit;font-size:14px;font-weight:700;color:var(--accent2);-moz-appearance:textfield}
+  .step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  #fab{position:fixed;right:18px;bottom:88px;z-index:20;display:none;box-shadow:0 6px 20px rgba(0,119,179,.35);padding:13px 18px;font-size:14px;border-radius:999px}
+  #cart{position:fixed;inset:0;z-index:30;display:none;background:rgba(61,71,82,.35)}
+  #cart .panel{position:absolute;right:0;top:0;bottom:0;width:min(560px,100%);background:#fff;display:flex;flex-direction:column}
+  #cart .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+  #cart .hd h3{margin:0;font-size:18px} #cart .x{background:none;border:0;font-size:26px;cursor:pointer;color:var(--muted)}
+  #cart .body{overflow:auto;padding:8px 18px;flex:1}
+  .ln{display:grid;grid-template-columns:1fr 84px 96px 28px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .ln b{display:block;font-size:14px} .ln small{color:var(--muted)} .ln input{width:100%;font:inherit;padding:6px;border:1px solid #d1d5db;border-radius:6px;text-align:center}
+  .ln .st{text-align:right;font-weight:700;color:var(--accent2)} .ln .rm{background:none;border:0;color:var(--muted);font-size:18px;cursor:pointer}
+  .tot{display:flex;justify-content:space-between;font-size:16px;font-weight:800;padding:14px 0;color:var(--accent2)}
+  .frm{display:grid;grid-template-columns:1fr 1fr;gap:8px} .frm input,.frm textarea{font:inherit;font-size:14px;padding:9px 10px;border:1px solid #d1d5db;border-radius:8px;width:100%}
+  .frm textarea{grid-column:1/-1;min-height:60px} .frm .full{grid-column:1/-1}
+  #cart .ft{padding:14px 18px;border-top:1px solid var(--line)} #cart .ft .btn{width:100%;padding:13px;font-size:15px}
+  #cmsg{font-size:13px;margin-top:8px;min-height:18px} #cmsg.ok{color:var(--accent2);font-weight:600} #cmsg.bad{color:var(--dark);font-weight:600}
+  .hpot{position:absolute;left:-9999px}
+  .btn-wa{position:fixed;right:18px;bottom:18px;z-index:25;width:58px;height:58px;border-radius:50%;background:#4dc247;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+  .btn-wa svg{width:32px;height:32px;fill:#fff}
+  .cuenta{background:var(--soft);color:var(--accent2);border-radius:8px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+  .empty{color:var(--muted);text-align:center;padding:40px 0}
+  footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
+  @media (max-width:760px){
+    header{flex-direction:column}
+    thead{display:none} table,tbody,tr,td{display:block;width:100%}
+    colgroup{display:none} tr{display:grid;grid-template-columns:90px 1fr;gap:2px 10px;padding:10px;border-bottom:1px solid var(--line)}
+    td{border:0;padding:2px 0} td.img{grid-row:span 5}
+    td.price{text-align:left}
+    #rows td:last-child{grid-column:2;padding-top:6px}
+    main{padding-bottom:150px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <img class="logo" alt="Qumax" src="data:image/webp;base64,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">
+    <h1 id="title">Lista gremio · acceso instaladores</h1>
+    <p id="sub">Precios de referencia para instaladores, en dólares con IVA incluido. Sujetos a cambio sin previo aviso. Disponibilidad aproximada.</p>
+  </div>
+  <div class="acts" id="acts" style="display:none">
+    <button class="btn ghost" id="out">Salir</button>
+  </div>
+</header>
+
+<form id="login" autocomplete="on">
+  <h2>Ingreso gremio</h2>
+  <p>Lista de precios exclusiva para técnicos instaladores registrados en Qumax.</p>
+  <label for="u">Usuario</label><input type="text" id="u" autocomplete="username" required>
+  <label for="p">Clave</label><input type="password" id="p" autocomplete="current-password" required>
+  <button class="btn" type="submit" id="go">Ingresar</button>
+  <div id="err"></div>
+  <div class="help">¿No tenés acceso? Pedilo por mail a <a href="mailto:info@qumax.com.ar?subject=Acceso%20a%20la%20lista%20gremio">info@qumax.com.ar</a></div>
+</form>
+
+<div id="app">
+  <div class="bar">
+    <input type="search" id="q" placeholder="Buscar modelo o descripción (ej.: DS-2CD, domo, NVR)">
+    <select id="cat"><option value="">Todas las categorías</option></select>
+    <select id="subc"><option value="">Todas las subcategorías</option></select>
+    <span class="count" id="count"></span>
+  </div>
+  <main>
+    <table>
+      <colgroup><col style="width:100px"><col style="width:20%"><col><col style="width:15%"><col style="width:140px"><col style="width:120px"><col style="width:124px"></colgroup>
+      <thead><tr><th>Foto</th><th>Artículo</th><th>Detalle</th><th>Categoría</th><th>Disponibilidad</th><th style="text-align:right">Precio USD<br>IVA incl.</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </main>
+</div>
+<a class="btn-wa" href="https://wa.me/__WA_NUM__" target="_blank" rel="noopener" aria-label="WhatsApp Qumax" title="Escribinos por WhatsApp"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.5.7 4.9 2 7L3 29l6.4-2c2 1.1 4.3 1.7 6.6 1.7 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-2.1 0-4.1-.6-5.8-1.7l-.4-.3-3.8 1.2 1.2-3.7-.3-.4C5.8 19.8 5.2 17.8 5.2 15.8 5.2 9.9 10 5.2 16 5.2s10.8 4.7 10.8 10.6S21.9 26.4 16 26.4zm5.9-7.9c-.3-.2-1.9-.9-2.2-1-.3-.1-.5-.2-.7.2-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2-.2-.3 0-.5.1-.7l.5-.6c.2-.2.2-.4.3-.6.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.1 1.4 3.4c.2.2 2.3 3.6 5.6 4.9 2.8 1.1 3.3.9 3.9.8.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg></a>
+<button class="btn" id="fab">🛒 Mi pedido</button>
+<div id="cart"><div class="panel">
+  <div class="hd"><h3>Mi pedido</h3><button class="x" id="cx" aria-label="Cerrar">×</button></div>
+  <div class="body">
+    <div id="lines"></div>
+    <div class="tot"><span>Total USD (IVA incluido)</span><span id="ctot">US$ 0,00</span></div>
+    <div class="cuenta" id="cuenta"></div>
+    <div class="frm" id="frm">
+      <textarea id="f_com" placeholder="Comentario (forma de entrega, pago, etc.)"></textarea>
+      <input class="hpot" id="f_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+    </div>
+    <p style="font-size:12px;color:var(--muted)">Los precios son de referencia de la lista de esta semana. Qumax te confirma stock y precio final por mail o WhatsApp.</p>
+  </div>
+  <div class="ft"><button class="btn" id="send">Enviar pedido</button><div id="cmsg"></div></div>
+</div></div>
+<footer>QUMAX S.A. · Lisandro de la Torre 323, Rafaela · Pedidos por WhatsApp __WHATSAPP__ · www.qumax.com.ar</footer>
+
+<script>
+const WA = "__WA_NUM__", ITER_DEF = 600000, PEDIDOS_URL = "__PEDIDOS_URL__";
+let USER = "", LISTA = "", CART = {};
+const $ = id => document.getElementById(id);
+const ub64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const S = crypto.subtle;
+let PRIV = null, META = null, KEY = null, DATA = [];
+
+async function uid(u){ const h = await S.digest("SHA-256", new TextEncoder().encode("qumax-gremio:" + u.trim().toLowerCase())); return [...new Uint8Array(h)].map(b=>b.toString(16).padStart(2,"0")).join(""); }
+async function fetchJSON(f){ const r = await fetch(f + "?t=" + Date.now(), {cache:"no-store"}); if(!r.ok) throw new Error("No se pudo cargar " + f); return r.json(); }
+
+async function unlock(user, pass){
+  const keys = await fetchJSON("keys.json");
+  const id = await uid(user), e = keys.users[id];
+  if(!e) throw new Error("Usuario o clave incorrectos");
+  const base = await S.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  const pk = await S.deriveKey({name:"PBKDF2", salt:ub64(e.salt), iterations:keys.iter||ITER_DEF, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  let der; try { der = await S.decrypt({name:"AES-GCM", iv:ub64(e.iv)}, pk, ub64(e.wk)); } catch(_) { throw new Error("Usuario o clave incorrectos"); }
+  return {id, priv: await S.importKey("pkcs8", der, {name:"ECDH", namedCurve:"P-256"}, false, ["deriveBits"])};
+}
+
+async function loadData({id, priv}){
+  META = await fetchJSON("data.json");
+  const w = META.wraps[id];
+  if(!w) throw new Error("Tu acceso todavía no está habilitado en la lista de esta semana. Consultá a Qumax.");
+  const eph = await S.importKey("raw", ub64(META.eph), {name:"ECDH", namedCurve:"P-256"}, false, []);
+  const bits = await S.deriveBits({name:"ECDH", public:eph}, priv, 256);
+  const hk = await S.importKey("raw", bits, "HKDF", false, ["deriveKey"]);
+  const kek = await S.deriveKey({name:"HKDF", hash:"SHA-256", salt:new Uint8Array(32), info:new TextEncoder().encode("qumax-gremio-v1")}, hk, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const kraw = await S.decrypt({name:"AES-GCM", iv:ub64(w.ivk)}, kek, ub64(w.wk));
+  KEY = await S.importKey("raw", kraw, "AES-GCM", false, ["decrypt"]);
+  const ct = await (await fetch("data.bin?t=" + Date.now(), {cache:"no-store"})).arrayBuffer();
+  const gz = await S.decrypt({name:"AES-GCM", iv:ub64(META.ivd)}, KEY, ct);
+  const txt = await new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
+  const obj = JSON.parse(txt);
+  DATA = obj.items; LISTA = obj.fecha; loadCart();
+  $("title").textContent = "Lista gremio Hikvision · actualizada el " + obj.fecha;
+  $("login").style.display = "none"; $("app").style.display = "block"; $("acts").style.display = "flex";
+  [...new Set(DATA.map(d=>d.categoria))].sort().forEach(c => $("cat").add(new Option(c,c)));
+  fillSub(); render();
+}
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cls = {"Stock alto":"alto","Stock normal":"normal","Stock bajo":"bajo","Sin stock":"sin"};
+const fmt = n => "US$ " + n.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+function fillSub(){
+  const c=$("cat").value; $("subc").length=1;
+  [...new Set(DATA.filter(d=>!c||d.categoria===c).map(d=>d.subcategoria))].sort().forEach(s=>$("subc").add(new Option(s,s)));
+}
+function render(){
+  const q=$("q").value.trim().toLowerCase().split(/\s+/).filter(Boolean), c=$("cat").value, s=$("subc").value;
+  // sin stock y sin ingreso: no se listan al navegar, solo aparecen si el técnico los busca
+  const list=DATA.filter(d=>(q.length||d.disponibilidad!=="Sin stock"||d.ingresos)&&(!c||d.categoria===c)&&(!s||d.subcategoria===s)
+    &&q.every(w=>(d.articulo+" "+d.detalle+" "+d.subcategoria).toLowerCase().includes(w)));
+  $("count").textContent=list.length+" artículos";
+  $("rows").innerHTML=list.map(d=>`<tr>
+    <td class="img">${d.img?`<img loading="lazy" src="${d.img}" alt="">`:""}</td>
+    <td class="art">${esc(d.articulo)}</td>
+    <td class="det"><div class="clamp" title="${esc(d.detalle)}">${esc(d.detalle)}</div></td>
+    <td class="cat">${esc(d.categoria)} · ${esc(d.subcategoria)}</td>
+    <td><span class="pill ${cls[d.disponibilidad]}">${d.disponibilidad}</span>${d.ingresos?`<br><span class="pill tr">${d.ingresos}</span>`:""}</td>
+    <td class="price">${fmt(d.precio)}</td>
+    <td>${CART[d.articulo]?`<div class="step"><button class="mn" data-k="${esc(d.articulo)}" title="Restar" aria-label="Restar">−</button><input type="number" min="0" max="9999" class="qy" data-k="${esc(d.articulo)}" value="${CART[d.articulo].qty}" aria-label="Cantidad"><button class="pl" data-k="${esc(d.articulo)}" title="Sumar" aria-label="Sumar">+</button></div>`:`<button class="add" data-k="${esc(d.articulo)}">+ Agregar</button>`}</td>
+  </tr>`).join("");
+}
+$("cat").onchange=()=>{fillSub();render()}; ["q","subc"].forEach(id=>$(id).addEventListener("input",render));
+
+// ---------------- carrito ----------------
+const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(_){ return null; } },
+             set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(_){} } };
+const CK = () => "qx_pedido_" + USER.toLowerCase();
+const BY = () => Object.fromEntries(DATA.map(d => [d.articulo, d]));
+function loadCart(){
+  const by = BY(), saved = ls.get(CK()) || {};
+  CART = {};
+  for(const [k, q] of Object.entries(saved)) if(by[k]) CART[k] = {qty: q};   // precios siempre de la lista vigente
+  $("cuenta").innerHTML = "El pedido se envía a nombre de tu cuenta <b>" + esc(USER) + "</b>, con los datos registrados en Qumax. Te llega una copia por mail.";
+  paintCart();
+}
+function saveCart(){ ls.set(CK(), Object.fromEntries(Object.entries(CART).map(([k,v]) => [k, v.qty]))); }
+function lines(){ const by = BY(); return Object.entries(CART).filter(([k]) => by[k]).map(([k,v]) => ({d: by[k], qty: v.qty, sub: Math.round(by[k].precio * v.qty * 100) / 100})); }
+function paintCart(){
+  const L = lines(), n = L.reduce((a,l) => a + l.qty, 0), tot = L.reduce((a,l) => a + l.sub, 0);
+  $("fab").style.display = L.length ? "block" : "none";
+  $("fab").textContent = "🛒 Mi pedido (" + n + ") · " + fmt(tot);
+  $("ctot").textContent = fmt(tot);
+  $("lines").innerHTML = L.length ? L.map(l => `<div class="ln">
+      <div><b>${esc(l.d.articulo)}</b><small>${fmt(l.d.precio)} c/u · ${l.d.disponibilidad}${l.d.ingresos ? " · " + l.d.ingresos : ""}</small></div>
+      <input type="number" min="1" max="9999" value="${l.qty}" data-q="${esc(l.d.articulo)}">
+      <div class="st">${fmt(l.sub)}</div>
+      <button class="rm" data-r="${esc(l.d.articulo)}" title="Quitar">✕</button></div>`).join("")
+    : '<div class="empty">Todavía no agregaste productos.</div>';
+}
+document.addEventListener("click", ev => {
+  const a = ev.target.closest("button.add, .step button.pl"); if(a){ const k = a.dataset.k; CART[k] = {qty: Math.min(9999, (CART[k]?.qty || 0) + 1)}; saveCart(); paintCart(); render(); return; }
+  const m = ev.target.closest(".step button.mn"); if(m){ const k = m.dataset.k, q = (CART[k]?.qty || 0) - 1; if(q > 0) CART[k] = {qty: q}; else delete CART[k]; saveCart(); paintCart(); render(); return; }
+  const r = ev.target.closest("button.rm"); if(r){ delete CART[r.dataset.r]; saveCart(); paintCart(); render(); }
+});
+$("rows").addEventListener("change", ev => {
+  const i = ev.target.closest("input.qy"); if(!i) return;
+  const q = Math.max(0, Math.min(9999, Math.floor(Number(i.value) || 0)));
+  if(q) CART[i.dataset.k] = {qty: q}; else delete CART[i.dataset.k];
+  saveCart(); paintCart(); render();
+});
+$("rows").addEventListener("keydown", ev => { if(ev.key === "Enter" && ev.target.matches("input.qy")) ev.target.blur(); });
+$("lines").addEventListener("change", ev => {
+  const i = ev.target.closest("input[data-q]"); if(!i) return;
+  const q = Math.max(0, Math.min(9999, Math.floor(Number(i.value) || 0)));
+  if(q) CART[i.dataset.q] = {qty: q}; else delete CART[i.dataset.q];
+  saveCart(); paintCart(); render();
+});
+$("fab").onclick = () => { $("cart").style.display = "block"; $("cmsg").textContent = ""; $("cmsg").className = ""; };
+$("cx").onclick = () => $("cart").style.display = "none";
+$("cart").addEventListener("click", ev => { if(ev.target.id === "cart") $("cart").style.display = "none"; });
+$("send").onclick = async () => {
+  const L = lines(), msg = $("cmsg"); msg.className = "bad";
+  if(!L.length){ msg.textContent = "El pedido está vacío."; return; }
+  $("send").disabled = true; $("send").textContent = "Enviando…"; msg.className = ""; msg.textContent = "";
+  try{
+    const r = await fetch(PEDIDOS_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify({usuario: USER, comentario: $("f_com").value.trim(), lista: LISTA, hp: $("f_hp").value,
+        items: L.map(l => ({sku: l.d.articulo, detalle: l.d.detalle, qty: l.qty, precio: l.d.precio}))})});
+    const j = await r.json();
+    if(!j.ok) throw new Error(j.error || "No se pudo enviar");
+    CART = {}; saveCart(); paintCart(); render(); $("f_com").value = "";
+    $("lines").innerHTML = '<div class="empty">✓ Pedido <b>' + esc(j.pedido) + '</b> enviado. Te llega una copia a tu mail registrado.</div>';
+    msg.className = "ok"; msg.textContent = "¡Listo! Qumax te va a confirmar stock y precio final.";
+    $("fab").style.display = "none";
+  }catch(e){ msg.className = "bad"; msg.textContent = (e.message || "No se pudo enviar") + ". Si sigue fallando, escribinos por WhatsApp al __WHATSAPP__."; }
+  finally{ $("send").disabled = false; $("send").textContent = "Enviar pedido"; }
+};
+
+$("out").onclick = () => location.reload();
+$("login").onsubmit = async ev => {
+  ev.preventDefault(); $("err").textContent = ""; $("go").disabled = true; $("go").textContent = "Verificando…";
+  try { USER = $("u").value.trim(); await loadData(await unlock(USER, $("p").value)); }
+  catch(e){ $("err").textContent = e.message || "No se pudo ingresar"; }
+  finally { $("go").disabled = false; $("go").textContent = "Ingresar"; }
+};
+
+</script>
+</body>
+</html>
