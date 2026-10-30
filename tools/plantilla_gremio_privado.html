@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://script.google.com https://script.googleusercontent.com https://dolarapi.com https://api.bluelytics.com.ar; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Lista Gremio · Qumax</title>
 <style>
@@ -15,6 +15,13 @@
   header h1{margin:4px 0 2px;font-size:16px;font-weight:600}
   header p{margin:0;font-size:13px;opacity:.92}
   #lema{display:none}
+  header{position:relative;justify-content:center;text-align:center}
+  header>div:first-child{display:flex;flex-direction:column;align-items:center}
+  header #title{display:none}
+  header .acts{position:absolute;right:20px;top:18px}
+  #dolar{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:13px;opacity:1}
+  #dolar b{font-size:15px} #dolar small{opacity:.85}
+  header.pre #dolar{display:none}
   header.pre{justify-content:center;text-align:center;padding:30px 20px 26px}
   header.pre>div:first-child{display:flex;flex-direction:column;align-items:center}
   header.pre .logo{height:58px;margin:0 0 12px}
@@ -96,6 +103,7 @@
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
     header{flex-direction:column}
+    header .acts{position:static;justify-content:center}
     thead{display:none} table,tbody,tr,td{display:block;width:100%}
     colgroup{display:none} tr{display:grid;grid-template-columns:90px 1fr;gap:2px 10px;padding:10px;border-bottom:1px solid var(--line)}
     td{border:0;padding:2px 0} td.img{grid-row:span 5}
@@ -112,6 +120,7 @@
     <p id="lema">Tu próxima obra empieza acá.<span>Con respaldo, el camino es más corto.</span></p>
     <h1 id="title">Lista gremio · acceso instaladores</h1>
     <p id="sub">Precios de referencia para instaladores, en dólares con IVA incluido. Sujetos a cambio sin previo aviso. Disponibilidad aproximada.</p>
+    <p id="dolar">Pagos en pesos: al <b>dólar BNA venta</b> del momento en que se hace efectivo el pago.</p>
   </div>
   <div class="acts" id="acts" style="display:none">
     <button class="btn" id="mis">📦 Mis pedidos</button>
@@ -156,7 +165,7 @@
       <textarea id="f_com" placeholder="Comentario (forma de entrega, pago, etc.)"></textarea>
       <input class="hpot" id="f_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     </div>
-    <p style="font-size:12px;color:var(--muted)">Los precios son de referencia de la lista de esta semana. Qumax te confirma stock y precio final por mail o WhatsApp.</p>
+    <p style="font-size:12px;color:var(--muted)">Los precios son de referencia de la lista de esta semana. Qumax te confirma stock y precio final por mail o WhatsApp. Si pagás en pesos, se toma el dólar BNA venta del momento en que se hace efectivo el pago.</p>
   </div>
   <div class="ft"><button class="btn" id="send">Enviar pedido</button><div id="cmsg"></div></div>
 </div></div>
@@ -213,7 +222,7 @@ async function loadData({id, priv}){
   const txt = await new Response(new Blob([gz]).stream().pipeThrough(new DecompressionStream("gzip"))).text();
   const obj = JSON.parse(txt);
   DATA = obj.items; LISTA = obj.fecha; loadCart();
-  $("title").textContent = "Lista gremio Hikvision · actualizada el " + obj.fecha;
+  $("title").textContent = "Lista gremio Hikvision · actualizada el " + obj.fecha; dolarBNA();
   document.querySelector("header").classList.remove("pre"); $("login").style.display = "none"; $("app").style.display = "block"; $("acts").style.display = "flex";
   [...new Set(DATA.map(d=>d.categoria))].sort().forEach(c => $("cat").add(new Option(c,c)));
   fillSub(); render();
@@ -243,6 +252,20 @@ function render(){
   </tr>`).join("");
 }
 $("cat").onchange=()=>{fillSub();render()}; ["q","subc"].forEach(id=>$(id).addEventListener("input",render));
+
+// ---------------- dólar BNA (referencia) ----------------
+async function dolarBNA(){
+  const ars = n => "$ " + Number(n).toLocaleString("es-AR", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  let v = null, f = "";
+  try { const j = await (await fetch("https://dolarapi.com/v1/dolares/oficial", {cache: "no-store"})).json();
+        if(j && j.venta > 0){ v = j.venta; f = j.fechaActualizacion; } } catch(_){}
+  if(!v) try { const j = await (await fetch("https://api.bluelytics.com.ar/v2/latest", {cache: "no-store"})).json();
+        if(j && j.oficial && j.oficial.value_sell > 0){ v = j.oficial.value_sell; f = j.last_update; } } catch(_){}
+  if(!v) return;   // si no hay cotización queda solo la leyenda
+  const d = f ? new Date(f) : null, cuando = d && !isNaN(d) ? d.toLocaleString("es-AR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false}) + " h" : "";
+  $("dolar").innerHTML = "Dólar BNA venta hoy: <b>" + ars(v) + "</b>" + (cuando ? " <small>(" + cuando + ")</small>" : "") +
+    "<br><small>Pagos en pesos: se toma el dólar BNA venta del momento en que se hace efectivo el pago.</small>";
+}
 
 // ---------------- carrito ----------------
 const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(_){ return null; } },
