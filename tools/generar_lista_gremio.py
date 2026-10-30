@@ -122,8 +122,8 @@ def write_sheet(ws, rows, imgs, fecha, titulo):
     ws.merge_cells(f"A1:{last}1"); ws.merge_cells(f"A2:{last}2"); ws.merge_cells(f"A3:{last}3")
     ws["A1"] = f"QUMAX  ·  LISTA GREMIO HIKVISION  ·  {titulo}"
     ws["A1"].font = Font(name="Calibri", size=16, bold=True, color="FFFFFF")
-    ws["A2"] = (f"Actualizada el {fecha}  ·  Precios de referencia para instaladores, en dólares con IVA incluido. "
-                "Sujetos a cambio sin previo aviso. Disponibilidad aproximada.")
+    ws["A2"] = (f"Actualizada el {fecha}  ·  Precios en dólares con IVA incluido. "
+                "Disponibilidad sujeta al momento de aprobación.")
     ws["A2"].font = Font(size=10, color="FFFFFF")
     ws["A3"] = f"Pedidos: WhatsApp {QUMAX['whatsapp']}  ·  {QUMAX['web']}  ·  {QUMAX['direccion']}"
     ws["A3"].font = Font(size=10, bold=True, color=C_CELESTE_OSC)
