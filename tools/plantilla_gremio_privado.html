@@ -10,27 +10,48 @@
 <style>
   :root{--dark:#3d4752;--accent:#0094dd;--accent2:#0077b3;--soft:#e6f4fb;--bg:#f4fafe;--card:#fff;--muted:#6b7280;--line:#e3eef6}
   *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--dark)}
-  header{background:var(--accent);color:#fff;padding:18px 20px 14px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-  header .logo{display:block;height:40px;width:auto;margin:0 0 6px}
-  header h1{margin:4px 0 2px;font-size:16px;font-weight:600}
-  header p{margin:0;font-size:13px;opacity:.92}
-  #lema{display:none}
-  header{position:relative;justify-content:center;text-align:center}
-  header>div:first-child{display:flex;flex-direction:column;align-items:center}
-  header #title{display:none}
-  header .acts{position:absolute;right:20px;top:18px}
-  #dolar{display:inline-block;margin-top:10px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:13px;opacity:1}
-  #dolar b{font-size:15px} #dolar small{opacity:.85}
-  header.pre #dolar{display:none}
-  header.pre{justify-content:center;text-align:center;padding:30px 20px 26px}
-  header.pre>div:first-child{display:flex;flex-direction:column;align-items:center}
+  /* encabezado: estilo del banner de la landing, con animación sutil */
+  header{position:relative;overflow:hidden;isolation:isolate;color:#fff;padding:18px 24px 16px;display:flex;justify-content:center;align-items:center;gap:16px;text-align:center;
+    background:radial-gradient(circle at 85% 20%,rgba(0,230,255,.55) 0,transparent 45%),radial-gradient(circle at 10% 90%,rgba(0,71,179,.6) 0,transparent 50%),linear-gradient(115deg,#0047b3 0%,#0094dd 50%,#00c2e0 100%);
+    background-size:100% 100%,100% 100%,220% 220%;animation:qxBg 20s ease-in-out infinite alternate}
+  header::before,header::after{content:"";position:absolute;z-index:-1;border-radius:50%;filter:blur(46px);pointer-events:none}
+  header::before{width:360px;height:360px;background:rgba(0,230,255,.55);top:-200px;right:14%;animation:qxFloat 15s ease-in-out infinite alternate}
+  header::after{width:320px;height:320px;background:rgba(0,60,170,.55);bottom:-220px;left:6%;animation:qxFloat 19s ease-in-out infinite alternate-reverse}
+  header .brillo{position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.13) 50%,transparent 65%);background-size:250% 100%;animation:qxShine 9s ease-in-out infinite}
+  @keyframes qxBg{from{background-position:0 0,0 0,0% 50%}to{background-position:0 0,0 0,100% 50%}}
+  @keyframes qxFloat{from{transform:translate(0,0) scale(1)}to{transform:translate(70px,30px) scale(1.18)}}
+  @keyframes qxShine{0%,55%{background-position:120% 0}100%{background-position:-120% 0}}
+  @media (prefers-reduced-motion:reduce){header,header::before,header::after,header .brillo{animation:none}}
+  header>div:not(.acts){display:flex;flex-direction:column;align-items:center;position:relative}
+  header .logo{display:block;height:44px;width:auto;margin:0 0 8px;filter:drop-shadow(0 2px 6px rgba(0,30,90,.25))}
+  header p{margin:0;font-size:13px;opacity:.95}
+  #title,#lema{display:none}
+  header.pre{padding:30px 20px 26px}
   header.pre .logo{height:58px;margin:0 0 12px}
-  header.pre #title,header.pre #sub{display:none}
+  header.pre #sub{display:none}
   header.pre #lema{display:block;font-size:17px;font-weight:600;line-height:1.4;max-width:620px;opacity:1}
   header.pre #lema span{display:block;font-size:14px;font-weight:400;opacity:.92;margin-top:4px}
-  header .acts .btn:not(.ghost){background:#fff;color:var(--accent2)} header .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  /* lateral derecho: dólar, moneda, mis pedidos y salir */
+  header .acts{position:absolute;right:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:10px}
+  .glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.38);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .fxc{display:flex;flex-direction:column;align-items:flex-start;padding:5px 14px;border-radius:12px;line-height:1.15;text-align:left;min-width:112px}
+  .fxc span{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;opacity:.85}
+  .fxc b{font-size:16px;font-weight:800}
+  .mon{position:relative;display:inline-flex;border-radius:999px;padding:3px}
+  .mon button{position:relative;z-index:1;font:inherit;font-size:13px;font-weight:800;width:46px;height:32px;border:0;border-radius:999px;background:none;color:#fff;cursor:pointer;transition:color .25s}
+  .mon button.on{color:var(--accent2)}
+  .mon .thumb{position:absolute;z-index:0;top:3px;left:3px;width:46px;height:32px;border-radius:999px;background:#fff;box-shadow:0 2px 8px rgba(0,40,100,.25);transition:transform .3s cubic-bezier(.4,.2,.2,1)}
+  .mon.ars .thumb{transform:translateX(46px)}
+  .mon.off{opacity:.5} .mon.off button{cursor:not-allowed}
+  .btn.ic{display:inline-flex;align-items:center;gap:8px;border-radius:12px;padding:10px 16px;font-size:14px;transition:transform .15s,box-shadow .2s,background .2s}
+  .btn.ic svg{width:18px;height:18px;flex:none}
+  header .acts .btn.ic:not(.ghost){background:#fff;color:var(--accent2);box-shadow:0 6px 18px rgba(0,40,100,.25)}
+  header .acts .btn.ic:hover{transform:translateY(-1px)}
+  header .acts .btn.ic:not(.ghost):hover{box-shadow:0 10px 24px rgba(0,40,100,.32)}
+  header .acts .btn.ghost:hover{background:rgba(255,255,255,.24)}
+  @media (max-width:1360px){ header{flex-direction:column} header .acts{position:static;transform:none;flex-wrap:wrap;justify-content:center} }
   .btn{font:inherit;font-size:13px;font-weight:700;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;white-space:nowrap}
-  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.8)}
+  .btn.ghost{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.45);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
   /* login */
   #login{max-width:380px;margin:60px auto;background:#fff;border-radius:14px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,.08)}
   #login h2{margin:0 0 4px;font-size:20px} #login p{margin:0 0 18px;color:var(--muted);font-size:14px}
@@ -122,8 +143,6 @@
   @media (max-width:640px){ #ficha{padding:8px} #ficha .box{grid-template-columns:1fr;margin:10px auto;padding:16px} }
   footer{font-size:12px;color:var(--muted);text-align:center;padding:20px}
   @media (max-width:760px){
-    header{flex-direction:column}
-    header .acts{position:static;justify-content:center}
     thead{display:none} table,tbody,tr,td{display:block;width:100%}
     colgroup{display:none} tr{display:grid;grid-template-columns:90px 1fr;gap:2px 10px;padding:10px;border-bottom:1px solid var(--line)}
     td{border:0;padding:2px 0} td.img{grid-row:span 5}
@@ -135,16 +154,18 @@
 </head>
 <body>
 <header class="pre">
+  <span class="brillo" aria-hidden="true"></span>
   <div>
     <img class="logo" alt="Qumax" src="data:image/webp;base64,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">
     <p id="lema">Tu próxima obra empieza acá.<span>Con respaldo, el camino es más corto.</span></p>
     <h1 id="title">Lista gremio · acceso instaladores</h1>
     <p id="sub">Precios en dólares con IVA incluido. Disponibilidad sujeta al momento de aprobación.</p>
-    <p id="dolar">Pagos en pesos: al <b>dólar BNA venta</b> del momento en que se hace efectivo el pago.</p>
   </div>
   <div class="acts" id="acts" style="display:none">
-    <button class="btn" id="mis">📦 Mis pedidos</button>
-    <button class="btn ghost" id="out">Salir</button>
+    <div class="fxc glass" id="fxc" title="Dólar oficial Banco Nación, venta"><span>Dólar BNA</span><b id="fxv">…</b></div>
+    <div class="mon glass off" id="mon" role="group" aria-label="Ver precios en"><span class="thumb"></span><button type="button" data-m="USD" class="on" title="Ver precios en dólares">US$</button><button type="button" data-m="ARS" title="Ver precios en pesos (dólar BNA venta de hoy)">$</button></div>
+    <button class="btn ic" id="mis"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5"/><path d="M12 13v8"/><path d="m7.5 5.5 9 5"/></svg>Mis pedidos</button>
+    <button class="btn ic ghost" id="out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>Salir</button>
   </div>
 </header>
 
@@ -168,7 +189,7 @@
   <main>
     <table>
       <colgroup><col style="width:100px"><col style="width:20%"><col><col style="width:15%"><col style="width:140px"><col style="width:120px"><col style="width:124px"></colgroup>
-      <thead><tr><th>Foto</th><th>Artículo</th><th>Detalle</th><th>Categoría</th><th>Disponibilidad</th><th style="text-align:right">Precio USD<br>IVA incl.</th><th></th></tr></thead>
+      <thead><tr><th>Foto</th><th>Artículo</th><th>Detalle</th><th>Categoría</th><th>Disponibilidad</th><th style="text-align:right" id="thp">Precio USD<br>IVA incl.</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </main>
@@ -179,12 +200,13 @@
   <div class="hd"><h3>Mi pedido</h3><button class="x" id="cx" aria-label="Cerrar">×</button></div>
   <div class="body">
     <div id="lines"></div>
-    <div class="tot"><span>Total USD (IVA incluido)</span><span id="ctot">US$ 0,00</span></div>
+    <div class="tot"><span id="totl">Total USD (IVA incluido)</span><span id="ctot">US$ 0,00</span></div>
     <div class="cuenta" id="cuenta"></div>
     <div class="frm" id="frm">
       <textarea id="f_com" placeholder="Comentario (forma de entrega, pago, etc.)"></textarea>
       <input class="hpot" id="f_hp" tabindex="-1" autocomplete="off" aria-hidden="true">
     </div>
+    <p id="arsnota" style="display:none;font-size:12px;color:var(--accent2);font-weight:600">Estás viendo pesos de referencia al dólar BNA venta de hoy. El pedido se registra en dólares.</p>
     <p style="font-size:12px;color:var(--muted)">Qumax te confirma stock y precio final al aprobar el pedido. Si pagás en pesos, se toma el dólar BNA venta del momento en que se hace efectivo el pago.</p>
   </div>
   <div class="ft"><button class="btn" id="send">Enviar pedido</button><div id="cmsg"></div></div>
@@ -251,7 +273,10 @@ async function loadData({id, priv}){
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const cls = {"Stock alto":"alto","Stock normal":"normal","Stock bajo":"bajo","Sin stock":"sin"};
-const fmt = n => "US$ " + n.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
+let DOLAR = 0, MONEDA = "USD";
+const fmt = n => MONEDA === "ARS" && DOLAR
+  ? "$ " + Math.round(n * DOLAR).toLocaleString("es-AR")
+  : "US$ " + n.toLocaleString("es-AR",{minimumFractionDigits:2,maximumFractionDigits:2});
 function fillSub(){
   const c=$("cat").value; $("subc").length=1;
   [...new Set(DATA.filter(d=>!c||d.categoria===c).map(d=>d.subcategoria))].sort().forEach(s=>$("subc").add(new Option(s,s)));
@@ -308,11 +333,26 @@ async function dolarBNA(){
         if(j && j.venta > 0){ v = j.venta; f = j.fechaActualizacion; } } catch(_){}
   if(!v) try { const j = await (await fetch("https://api.bluelytics.com.ar/v2/latest", {cache: "no-store"})).json();
         if(j && j.oficial && j.oficial.value_sell > 0){ v = j.oficial.value_sell; f = j.last_update; } } catch(_){}
-  if(!v) return;   // si no hay cotización queda solo la leyenda
+  if(!v){ $("fxv").textContent = "s/d"; $("mon").title = "Cotización no disponible en este momento"; return; }
+  DOLAR = Number(v);
   const d = f ? new Date(f) : null, cuando = d && !isNaN(d) ? d.toLocaleString("es-AR", {day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", hour12: false}) + " h" : "";
-  $("dolar").innerHTML = "Dólar BNA venta hoy: <b>" + ars(v) + "</b>" + (cuando ? " <small>(" + cuando + ")</small>" : "") +
-    "<br><small>Pagos en pesos: se toma el dólar BNA venta del momento en que se hace efectivo el pago.</small>";
+  $("fxv").textContent = ars(v);
+  $("fxc").title = "Dólar oficial Banco Nación, venta" + (cuando ? " · " + cuando : "") + ". Pagos en pesos: al dólar BNA venta del momento en que se hace efectivo el pago.";
+  $("mon").classList.remove("off");
+  let m = "USD"; try { m = localStorage.getItem("qx_moneda") || "USD"; } catch(_){}
+  if(m === "ARS") setMoneda("ARS");
 }
+function setMoneda(m){
+  if(m === "ARS" && !DOLAR) return;
+  MONEDA = m; try { localStorage.setItem("qx_moneda", m); } catch(_){}
+  $("mon").classList.toggle("ars", m === "ARS");
+  $("mon").querySelectorAll("button").forEach(b => b.classList.toggle("on", b.dataset.m === m));
+  $("thp").innerHTML = (m === "ARS" ? "Precio $" : "Precio USD") + "<br>IVA incl.";
+  $("totl").textContent = m === "ARS" ? "Total en pesos (referencia)" : "Total USD (IVA incluido)";
+  $("arsnota").style.display = m === "ARS" ? "block" : "none";
+  render(); paintCart(); if(FICHA) ficha(FICHA);
+}
+$("mon").addEventListener("click", ev => { const b = ev.target.closest("button[data-m]"); if(b) setMoneda(b.dataset.m); });
 
 // ---------------- carrito ----------------
 const ls = { get(k){ try{ return JSON.parse(localStorage.getItem(k)||"null"); }catch(_){ return null; } },
