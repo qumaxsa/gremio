@@ -503,6 +503,15 @@ $("hist").addEventListener("click", ev => {
   b.parentElement.querySelector(".rmsg").textContent = "✓ " + ok + " artículos agregados al carrito con el precio de hoy" + (falta.length ? ". No están en la lista actual: " + falta.join(", ") : "");
 });
 
+// cuenta administradora (info@): en lugar de "Mis pedidos" muestra el acceso al panel de pedidos.
+// El panel sigue protegido por la cuenta de Google de Qumax; este botón solo es el atajo.
+const ADMINS_PANEL = ["info@qumax.com.ar"], PANEL_URL = "https://gremio.qumax.com.ar/panel/";
+function modoAdmin(){
+  if(ADMINS_PANEL.indexOf(USER.toLowerCase()) < 0) return;
+  const b = $("mis"); if(!b) return;
+  b.lastChild.textContent = "Panel de pedidos"; b.title = "Ver y gestionar los pedidos de los técnicos";
+  b.onclick = ev => { ev.preventDefault(); ev.stopImmediatePropagation(); window.open(PANEL_URL, "_blank", "noopener"); };
+}
 // registro de ingresos: avisa al panel de pedidos que el técnico abrió la lista (no bloquea si falla)
 function avisarIngreso(){
   if(!PEDIDOS_URL || !PASE) return;
@@ -512,7 +521,7 @@ function avisarIngreso(){
 $("out").onclick = () => location.reload();
 $("login").onsubmit = async ev => {
   ev.preventDefault(); $("err").textContent = ""; $("go").disabled = true; $("go").textContent = "Verificando…";
-  try { USER = $("u").value.trim(); await loadData(await unlock(USER, $("p").value)); avisarIngreso(); }
+  try { USER = $("u").value.trim(); await loadData(await unlock(USER, $("p").value)); avisarIngreso(); modoAdmin(); }
   catch(e){ $("err").textContent = e.message || "No se pudo ingresar"; }
   finally { $("go").disabled = false; $("go").textContent = "Ingresar"; }
 };
