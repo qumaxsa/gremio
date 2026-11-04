@@ -62,7 +62,8 @@
     <div><label for="empresa">Empresa o nombre comercial</label><input id="empresa" autocomplete="organization" maxlength="80"></div>
     <div><label for="celular">Celular (WhatsApp) *</label><input id="celular" type="tel" autocomplete="tel" required maxlength="30" placeholder="Ej.: 3492 123456"></div>
     <div><label for="email">Email *</label><input id="email" type="email" autocomplete="email" required maxlength="120"></div>
-    <div class="full"><label for="localidad">Localidad *</label><input id="localidad" autocomplete="address-level2" required maxlength="80"></div>
+    <div><label for="cuit">CUIT o CUIL *</label><input id="cuit" inputmode="numeric" required maxlength="13" placeholder="Ej.: 20-12345678-3"></div>
+    <div><label for="localidad">Localidad *</label><input id="localidad" autocomplete="address-level2" required maxlength="80"></div>
     <div class="full"><label for="coment">¿A qué te dedicás o qué necesitás? (opcional)</label><textarea id="coment" maxlength="800" placeholder="Ej.: instalo cámaras y alarmas, me interesa la capacitación de Hikvision"></textarea></div>
   </div>
   <input class="hpot" id="web" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -74,13 +75,23 @@
 <script>
 const URL_ALTA = "https://script.google.com/macros/s/AKfycbyDf0wVkVnxrvMzOM1n_Nsy72fAfsyw5bZK5P2NNJgxxQLG8ywScaiVtnXojtkc8q7uiA/exec";
 const $ = id => document.getElementById(id);
+function cuitOk(v){
+  const d = String(v).replace(/\D/g, "");
+  if(d.length !== 11 || !/^(20|23|24|25|26|27|30|33|34)/.test(d)) return "";
+  const w = [5,4,3,2,7,6,5,4,3,2];
+  let t = 0; for(let i = 0; i < 10; i++) t += w[i] * Number(d[i]);
+  let dv = 11 - (t % 11); if(dv === 11) dv = 0; if(dv === 10) return "";
+  return Number(d[10]) === dv ? d.slice(0,2) + "-" + d.slice(2,10) + "-" + d[10] : "";
+}
 $("f").onsubmit = async ev => {
   ev.preventDefault();
   const m = $("msg"); m.className = ""; m.textContent = "";
+  const cuit = cuitOk($("cuit").value);
+  if(!cuit){ m.textContent = "Revisá el CUIT o CUIL: son 11 números (ej.: 20-12345678-3)."; $("cuit").focus(); return; }
   $("go").disabled = true; $("go").textContent = "Enviando…";
   try {
     const body = {tipo: "alta", nombre: $("nombre").value.trim(), empresa: $("empresa").value.trim(), celular: $("celular").value.trim(),
-      email: $("email").value.trim(), localidad: $("localidad").value.trim(), comentario: $("coment").value.trim(), hp: $("web").value};
+      email: $("email").value.trim(), localidad: $("localidad").value.trim(), cuit: cuit, comentario: ("CUIT/CUIL: " + cuit + ($("coment").value.trim() ? " · " + $("coment").value.trim() : "")), hp: $("web").value};
     const r = await fetch(URL_ALTA, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"}, body: JSON.stringify(body)});
     const j = await r.json();
     if(!j.ok) throw new Error(j.error || "No se pudo enviar");
