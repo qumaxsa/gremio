@@ -503,10 +503,16 @@ $("hist").addEventListener("click", ev => {
   b.parentElement.querySelector(".rmsg").textContent = "✓ " + ok + " artículos agregados al carrito con el precio de hoy" + (falta.length ? ". No están en la lista actual: " + falta.join(", ") : "");
 });
 
+// registro de ingresos: avisa al panel de pedidos que el técnico abrió la lista (no bloquea si falla)
+function avisarIngreso(){
+  if(!PEDIDOS_URL || !PASE) return;
+  try { fetch(PEDIDOS_URL, {method: "POST", headers: {"Content-Type": "text/plain;charset=utf-8"},
+    body: JSON.stringify({tipo: "ingreso", usuario: USER, pase: PASE, lista: LISTA})}).catch(() => {}); } catch(_) {}
+}
 $("out").onclick = () => location.reload();
 $("login").onsubmit = async ev => {
   ev.preventDefault(); $("err").textContent = ""; $("go").disabled = true; $("go").textContent = "Verificando…";
-  try { USER = $("u").value.trim(); await loadData(await unlock(USER, $("p").value)); }
+  try { USER = $("u").value.trim(); await loadData(await unlock(USER, $("p").value)); avisarIngreso(); }
   catch(e){ $("err").textContent = e.message || "No se pudo ingresar"; }
   finally { $("go").disabled = false; $("go").textContent = "Ingresar"; }
 };
