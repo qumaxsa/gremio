@@ -1,0 +1,62 @@
+name: Diag impuestos
+on:
+  push:
+    branches: [diag-impuestos]
+permissions:
+  contents: read
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1  # v6.3.0
+        with:
+          python-version: "3.12"
+      - name: Diag
+        env:
+          PROV_API_URL: ${{ secrets.PROV_API_URL }}
+          PROV_API_KEY: ${{ secrets.PROV_API_KEY }}
+        shell: python
+        run: |
+          import json, os, urllib.request, collections
+          BASE = os.environ["PROV_API_URL"].rstrip("/") + "/drop-shipping-api/"
+          K = os.environ["PROV_API_KEY"]
+          def get(p, page=1):
+              r = urllib.request.Request(f"{BASE}{p}?page={page}&limit=500", headers={"x-api-key": K, "Accept": "application/json", "User-Agent": "qumax-gremio/1.0"})
+              return json.load(urllib.request.urlopen(r, timeout=60))
+          def todo(p):
+              out, page = [], 1
+              while True:
+                  j = get(p, page); out += j.get("data", [])
+                  if page >= int(j.get("total_pages") or 1): return out
+                  page += 1
+          brands = todo("brands")
+          bid = next(b["brand_id"] for b in brands if str(b.get("brand_desc","")).strip().lower() == "hikvision")
+          prods = {p["item_id"]: p for p in todo("products") if p.get("brand_id") == bid}
+          print("CAMPOS products:", sorted(next(iter(prods.values())).keys()))
+          cats = {c["cat_id"]: c["cat_desc"] for c in todo("categories")}
+          subs = {c["subcat_id"]: c["subcat_desc"] for c in todo("subcategories")}
+          prices = [x for x in todo("prices") if x["item_id"] in prods]
+          print("CAMPOS prices:", sorted(prices[0].keys()))
+          print("TIPOS taxes:", collections.Counter(type(x.get("taxes")).__name__ for x in prices))
+          print("TIPOS iva:", collections.Counter(repr(x.get("iva")) for x in prices))
+          def norm(t):
+              if isinstance(t, list): return json.dumps([{k: (v if k not in ("amount","value","monto","importe") else "<n>") for k, v in d.items()} if isinstance(d, dict) else d for d in t], ensure_ascii=False, sort_keys=True)
+              if isinstance(t, dict): return json.dumps({k: v for k, v in t.items()}, ensure_ascii=False, sort_keys=True)[:300]
+              return repr(t)
+          c = collections.Counter(norm(x.get("taxes")) for x in prices)
+          print("VALORES taxes (top 25):")
+          for k, n in c.most_common(25): print(f"  {n:5d}  {k[:400]}")
+          def vacio(t): return t in (None, "", 0, "0", [], {}) or (isinstance(t,(int,float,str)) and str(t).strip() in ("0","0.0","0.00"))
+          con = [x for x in prices if not vacio(x.get("taxes"))]
+          print("CON taxes:", len(con), "de", len(prices))
+          cc = collections.Counter((cats.get(prods[x["item_id"]].get("cat_id"),""), subs.get(prods[x["item_id"]].get("subcat_id"),"")) for x in con)
+          for k, n in cc.most_common(40): print(f"  {n:4d}  {k}")
+          print("EJEMPLOS (taxes / price_no_list):")
+          for x in con[:25]:
+              p = prods[x["item_id"]]; t = x.get("taxes")
+              try: ratio = round(float(t) / float(x["price_no_list"]), 4)
+              except Exception: ratio = None
+              print("  ", p.get("item_desc"), "|", subs.get(p.get("subcat_id")), "| iva", x.get("iva"), "| taxes", json.dumps(t)[:300], "| ratio", ratio)
+          # otros campos numericos en prices distintos de price/price_no_list
+          otros = [k for k in prices[0] if k not in ("price","price_no_list","item_id","taxes","iva")]
+          for k in otros: print("CAMPO", k, collections.Counter(repr(x.get(k)) for x in prices).most_common(6))
