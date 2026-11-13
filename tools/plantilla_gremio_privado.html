@@ -329,7 +329,7 @@ function ficha(k){
     <div class="ph">${foto ? `<img src="${foto}" alt="${esc(d.articulo)}" onerror="this.onerror=null;this.src='${d.img}'">` : '<span class="sinf">Sin foto</span>'}</div>
     <div><h3>${esc(d.articulo)}</h3><div class="cat">${esc(d.categoria)} · ${esc(d.subcategoria)}</div>
       <span class="pill ${cls[d.disponibilidad]}">${d.disponibilidad}</span>${d.ingresos ? ` <span class="pill tr">${d.ingresos}</span>` : ""}
-      <div class="pr">${fmt(d.precio)} <small>IVA incl. (${d.iva}%)</small></div>
+      <div class="pr">${fmt(d.precio)} <small>${d.ii ? "IVA e imp. internos incl." : `IVA incl. (${d.iva}%)`}</small></div>
       <div class="txt">${d.detalle && d.detalle_largo && !d.detalle_largo.startsWith(d.detalle.slice(0, 40)) ? `<b>${esc(d.detalle)}</b>\n\n` : ""}${esc(d.detalle_largo || d.detalle) || "Sin descripción."}</div>
       <div>${CART[k] ? `<div class="step"><button class="mn" data-k="${esc(k)}" aria-label="Restar">−</button><input type="number" min="0" max="9999" class="qy" data-k="${esc(k)}" value="${CART[k].qty}" aria-label="Cantidad"><button class="pl" data-k="${esc(k)}" aria-label="Sumar">+</button></div>` : `<button class="add" data-k="${esc(k)}">+ Agregar al pedido</button>`}</div></div>`;
   $("ficha").style.display = "block";

@@ -11,7 +11,8 @@ Variables de entorno (secretos de GitHub, nunca en el código ni en documentos):
 Marca: solo Hikvision.
 Nunca se usa el campo "price" (costo de Qumax): solo "price_no_list" (precio gremio).
 """
-import base64, io, json, os, sys, time, urllib.request
+import base64, io, json, os, re, sys, time, urllib.request
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +23,16 @@ MARCA = "Hikvision"
 BASE = os.environ["PROV_API_URL"].rstrip("/") + "/drop-shipping-api/"
 KEY = os.environ["PROV_API_KEY"]
 UA = {"User-Agent": "qumax-gremio/1.0"}
+# impuestos internos: vienen en "taxes" (lista de {name, percentage}) junto al IVA, p. ej. "05-Imp Int 23.46%".
+# El porcentaje ya es la tasa efectiva sobre el precio neto (19% nominal = 23,46%; 9,5% = 10,50%).
+IMP_INT = re.compile(r"imp\.?\s*int", re.I)
+IVA_RE = re.compile(r"i\.?\s*v\.?\s*a", re.I)
+
+
+def imp_interno(pr):
+    """Suma de los porcentajes de impuestos internos del artículo (0 si no tiene)."""
+    return round(sum(float(t.get("percentage") or 0) for t in (pr.get("taxes") or [])
+                     if isinstance(t, dict) and IMP_INT.search(str(t.get("name", "")))), 4)
 
 
 def get(path, page=1, limit=500, tries=4):
@@ -121,6 +132,7 @@ def main():
             "Stock (*)": str((stock.get(p["item_id"]) or {}).get("stock_quantity", 0)),
             "Precio Gremio USD": str(pr["price_no_list"]),   # precio gremio (nunca "price")
             "IVA": str(pr.get("iva", 21)),
+            "Imp Int": str(imp_interno(pr)),   # se suma al precio final (sin discriminar)
             "_foto": p.get("image_url_100") or "",
             "_foto_g": p.get("image_url_400") or p.get("image_url_250") or "",
         })
@@ -136,12 +148,19 @@ def main():
             imgs_g[x["Código EAN"]] = g
         x.pop("_foto"); x.pop("_foto_g")
 
-    # CONTROL DE PRECIOS: se publica solo el precio gremio (price_no_list, sin IVA; la lista le suma el IVA).
+    # CONTROL DE PRECIOS: se publica solo el precio gremio (price_no_list, sin impuestos; la lista le suma IVA e imp. internos).
     # Si algún precio gremio es menor que el costo o falta, algo cambió en la API: no se publica nada.
     malos = [x for x in prods if x["item_id"] in precios
              and not (float(precios[x["item_id"]].get("price_no_list") or 0) >= float(precios[x["item_id"]].get("price") or 0) > 0)]
     if malos:
         raise SystemExit(f"CONTROL DE PRECIOS: {len(malos)} artículos con precio gremio menor al costo o sin precio. No se publica.")
+    # impuestos internos: resumen en el log (sin precios) y aviso si aparece un impuesto desconocido
+    ii = Counter((x["Sub Categoría"], x["Imp Int"]) for x in items if float(x["Imp Int"]) > 0)
+    print(f"Impuestos internos: {sum(ii.values())} artículos | " + ", ".join(f"{k[0]} {k[1]}%: {n}" for k, n in ii.most_common()))
+    raros = Counter(str(t.get("name")) for x in precios.values() for t in (x.get("taxes") or [])
+                    if isinstance(t, dict) and not IMP_INT.search(str(t.get("name", ""))) and not IVA_RE.search(str(t.get("name", ""))))
+    if raros:
+        print(f"AVISO impuestos no reconocidos (no se suman al precio): {dict(raros)}")
     if len(items) < 800:
         raise SystemExit(f"Muy pocos artículos ({len(items)}): algo cambió en la API, no se publica")
     pkg = {"fecha": datetime.now(timezone.utc).isoformat(), "items": items,

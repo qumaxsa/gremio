@@ -11,7 +11,8 @@ Entrada (paquete armado en el navegador, ver PROCEDIMIENTO):
   imgs      -> {Codigo EAN: jpg base64 80x60}
 
 Reglas:
-  Precio gremio USD con IVA = Precio Gremio USD (sin IVA) x (1 + IVA%), redondeado a 2 decimales.
+  Precio gremio USD final = Precio Gremio USD (neto) x (1 + IVA% + Imp. internos%), redondeado a 2 decimales.
+  (IVA e impuestos internos se calculan sobre el neto; el impuesto interno no se discrimina en la lista.)
   Stock: 0 = Sin stock | 1-9 = Stock bajo | 10-200 = Stock normal | >200 = Stock alto
   Si el articulo tiene mercaderia en transito -> "Ingresando pronto".
   Columnas: Foto, Marca, Articulo, Detalle, Categoria, Subcategoria, Disponibilidad, Ingresos,
@@ -99,6 +100,7 @@ def build_rows(pkg):
             continue
         ean = str(x["Código EAN"]).strip()
         iva = num(x["IVA"])
+        imp_int = num(x.get("Imp Int", 0))   # impuestos internos (DVR, NVR, etc.), % sobre el neto
         neto = num(x["Precio Gremio USD"])
         if neto <= 0:
             continue
@@ -118,8 +120,9 @@ def build_rows(pkg):
             subcategoria=clean(x["Sub Categoría"]),
             disponibilidad=stock_label(num(x["Stock (*)"])),
             ingresos=(f"Ingresa aprox. {llegada:%d/%m}" if llegada else "Ingresando pronto") if en_transito else "",
-            precio=round(neto * (1 + iva / 100), 2),
+            precio=round(neto * (1 + (iva + imp_int) / 100), 2),
             iva=iva,
+            ii=imp_int > 0,
         ))
     rows.sort(key=lambda r: (r["categoria"], r["subcategoria"], r["articulo"]))
     return rows
@@ -237,7 +240,7 @@ def fotos_grandes(rows, pkg, outdir, imgs):
 
 def build_html(rows, imgs, fecha, out, big=None):
     big = big or {}
-    data = [{k: r[k] for k in ("articulo", "detalle", "detalle_largo", "categoria", "subcategoria", "disponibilidad", "ingresos", "precio", "iva")}
+    data = [{k: r[k] for k in ("articulo", "detalle", "detalle_largo", "categoria", "subcategoria", "disponibilidad", "ingresos", "precio", "iva", "ii")}
             | {"img": ("data:image/jpeg;base64," + imgs[r["ean"]]) if r["ean"] in imgs else "", "big": big.get(r["ean"], "")} for r in rows]
     tpl = Path(__file__).with_name("plantilla_web.html").read_text(encoding="utf-8")
     page = (tpl.replace("__FECHA__", html.escape(fecha))
