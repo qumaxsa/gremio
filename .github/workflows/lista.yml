@@ -2,8 +2,7 @@ name: Lista gremio (API)
 
 on:
   schedule:
-    - cron: "23 11-20/3 * * 1-6"   # cada 3 horas: 8:23, 11:23, 14:23 y 17:23 (Argentina), lunes a sábado
-    - cron: "23 13 * * 0"        # domingo 10:23
+    - cron: "23 11-20/3 * * 1-5"   # cada 3 horas: 8:23, 11:23, 14:23 y 17:23 (Argentina), lunes a viernes
   workflow_dispatch:
   push:
     branches: [main]
